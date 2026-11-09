@@ -1,0 +1,14 @@
+flowchart TD
+  Input[用户任务] --> Detect[识别仓库]
+  Detect --> Route{任务模式}
+  Route --> Generate[Generate\n计划→补丁→验证]
+  Route --> Review[Review\n读取 diff→分析→发现]
+  Route --> Fix[Fix\n复现→定位→修复→回归]
+  Route --> Test[Test\n推断命令→执行→分类]
+  Route --> Scaffold[Scaffold\n模板→变量→安装→检查]
+  Generate --> Evidence[统一证据模型]
+  Review --> Evidence
+  Fix --> Evidence
+  Test --> Evidence
+  Scaffold --> Evidence
+  Evidence --> Report[报告/JSONL/可撤销变更]

@@ -1,0 +1,3971 @@
+/* Taste: framed sheet;
+preserve the original white, grey and blue workbench. */
+:root {
+  color-scheme:light;
+  --bg:#fff;
+  --surface:#f5f5f7;
+  --surface-elevated:#fff;
+  --raised:#fafafa;
+  --border:#e7e7eb;
+  --control:#c9cbd1;
+  --text:#1d1d1f;
+  --text-secondary:#626269;
+  --text-tertiary:#707078;
+  --accent:#0071e3;
+  --accent-light:#0064ca;
+  --accent-soft:#edf5ff;
+  --success:#267344;
+  --success-bg:#ecf7ef;
+  --warning:#986000;
+  --warning-bg:#fff7e6;
+  --danger:#bc3434;
+  --danger-bg:#fff0ef;
+  --radius:12px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Consolas,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-expo:cubic-bezier(.16,1,.3,1);
+  --ease-in-out:cubic-bezier(.76,0,.24,1);
+  --hover:#ececee;
+  --active:#ebedee;
+  /* The segmented track: a shade between the page ground and the surface, so
+     the raised capsule on it reads as a control. */
+  --track:#eaeaee;
+  --track-hover:#dedee4;
+  --terminal:#1c1c1f;
+  --terminal-ink:#e0e1e7;
+  --terminal-muted:#a1a4b0;
+  --terminal-line:#2c2c31;
+  --terminal-hover:#33333a
+}
+[data-theme="dark"] {
+  color-scheme:dark;
+  --bg:#18181a;
+  --surface:#111113;
+  --surface-elevated:#1d1d20;
+  --raised:#242427;
+  --border:#333337;
+  --control:#55555b;
+  --text:#f4f4f6;
+  --text-secondary:#b2b2bb;
+  --text-tertiary:#a0a0aa;
+  --accent:#71b4ff;
+  --accent-light:#94c6ff;
+  --accent-soft:#202f42;
+  --success:#8ad3a0;
+  --success-bg:#203026;
+  --warning:#eac17b;
+  --warning-bg:#332b1e;
+  --danger:#ff9b98;
+  --danger-bg:#3b2526;
+  --hover:#26262a;
+  --active:#222225;
+  --track:#26262b;
+  --track-hover:#323238;
+  --terminal:#111113
+}
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font:14px/1.55 var(--font);
+  color:var(--text);
+  background:var(--surface);
+  -webkit-font-smoothing:antialiased
+}
+button,input,select,textarea {
+  font:inherit
+}
+button {
+  cursor:pointer;
+  color:inherit;
+  touch-action:manipulation
+}
+button,a,input,textarea,select {
+  -webkit-tap-highlight-color:transparent
+}
+a {
+  color:var(--accent);
+  text-decoration:none
+}
+button:disabled {
+  cursor:not-allowed;
+  opacity:.5
+}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible {
+  outline:3px solid var(--accent);
+  outline-offset:3px
+}
+h1,h2,h3,p {
+  margin:0
+}
+h2,h3 {
+  font-weight:600
+}
+svg.icon {
+  width:18px;
+  height:18px;
+  flex-shrink:0;
+  vertical-align:middle;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.65;
+  stroke-linecap:round;
+  stroke-linejoin:round
+}
+.sr-only {
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0
+}
+.skip-link {
+  position:fixed;
+  top:-100px;
+  left:16px;
+  padding:12px;
+  background:var(--bg);
+  z-index:500
+}
+.skip-link:focus {
+  top:8px
+}
+.muted {
+  color:var(--text-secondary)
+}
+.num {
+  font-variant-numeric:tabular-nums
+}
+code,pre,kbd {
+  font-family:var(--font-mono)
+}
+.navbar {
+  height:68px;
+  display:flex;
+  align-items:center;
+  gap:24px;
+  padding:0 24px;
+  background:var(--surface);
+  position:relative;
+  z-index:20
+}
+.nav-brand {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--text);
+  flex:0 0 195px
+}
+.nav-logo {
+  width:31px;
+  height:31px;
+  color:var(--accent)
+}
+.nav-title {
+  font-size:18px;
+  letter-spacing:-.5px;
+  font-weight:650;
+  white-space:nowrap
+}
+.brand-sub {
+  display:block;
+  font-size:11px;
+  font-weight:400;
+  letter-spacing:1px;
+  color:var(--text-secondary);
+  margin-top:-2px
+}
+/* ---- Apple physics ------------------------------------------------------
+   The stage navigation is a segmented control: a track, one raised capsule
+   behind the current stage, and a hairline of accent that rides along with
+   it to show the position. The capsule travels on a transform, so the label
+   itself never reflows and the bar never jumps. */
+.nav-stages {
+  position:relative;
+  display:flex;
+  align-self:center;
+  align-items:center;
+  gap:2px;
+  flex:0 0 auto;
+  margin:0 auto;
+  padding:3px;
+  background:var(--track);
+  border-radius:999px;
+  isolation:isolate
+}
+.nav-selection,
+.nav-hover {
+  position:absolute;
+  top:3px;
+  left:0;
+  width:120px;
+  height:32px;
+  border-radius:999px;
+  background:var(--surface-elevated);
+  opacity:0;
+  pointer-events:none;
+  z-index:0;
+  transform-origin:left center
+}
+.nav-hover {
+  background:var(--track-hover)
+}
+.stage-pill {
+  position:relative;
+  z-index:1;
+  border:0;
+  background:none;
+  padding:9px 14px;
+  white-space:nowrap;
+  font-size:13px;
+  color:var(--text-secondary);
+  border-radius:999px;
+  transition:color .18s
+}
+.stage-pill:hover {
+  color:var(--text)
+}
+.stage-pill.active {
+  color:var(--text);
+  font-weight:600
+}
+/* Without scripting there is no capsule to place, so the current stage marks
+   itself with a fill. */
+html:not(.js) .stage-pill.active {
+  background:var(--surface-elevated)
+}
+/* The hairline of accent sits under the track and marks the position. */
+.nav-indicator {
+  height:2px;
+  background:var(--accent);
+  position:absolute;
+  bottom:-5px;
+  left:0;
+  width:40px;
+  pointer-events:none;
+  transform-origin:left center;
+  border-radius:2px
+}
+.nav-actions {
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+.icon-button {
+  width:34px;
+  height:34px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:8px;
+  color:var(--text-secondary);
+  transition:background .18s,color .18s,transform .18s
+}
+.icon-button:hover {
+  background:var(--hover);
+  color:var(--text)
+}
+.icon-button:active {
+  transform:scale(.94)
+}
+.icon-button.small {
+  width:28px;
+  height:28px
+}
+.btn {
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  border:1px solid transparent;
+  border-radius:8px;
+  padding:7px 14px;
+  font-size:13px;
+  font-weight:500;
+  white-space:nowrap;
+  transition:background .18s,border-color .18s,transform .18s
+}
+.btn:hover {
+  transform:translateY(-1px)
+}
+.btn:active {
+  transform:translateY(0) scale(.98)
+}
+.btn-primary {
+  background:var(--accent);
+  color:white
+}
+.btn-primary:hover {
+  background:var(--accent-light)
+}
+[data-theme="dark"] .btn-primary {
+  color:#101115
+}
+.btn-secondary {
+  background:var(--surface-elevated);
+  border-color:var(--control);
+  color:var(--text)
+}
+.btn-secondary:hover {
+  background:var(--raised);
+  border-color:var(--text-secondary)
+}
+.btn-quiet {
+  background:var(--raised);
+  color:var(--text-secondary);
+  border-color:var(--border)
+}
+/* A copy button confirms in place for a moment after the copy happened. */
+.btn.is-copied {
+  background:var(--success-bg);
+  border-color:var(--success);
+  color:var(--success)
+}
+.text-button {
+  border:0;
+  background:none;
+  color:var(--accent);
+  padding:4px 0;
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  font-size:13px
+}
+.text-button:hover {
+  text-decoration:underline;
+  text-underline-offset:4px
+}
+.main-container {
+  display:grid;
+  grid-template-columns:228px minmax(0,1fr) 272px;
+  height:calc(100dvh - 68px);
+  padding:0 8px 8px 0;
+  gap:0;
+  /* The two side panels can be put away. The panel slides out under the edge
+     while the work area grows into the space it gives back, the way a sidebar
+     closes on the platform. The grid track is what animates, so the work area
+     resizes smoothly instead of jumping. */
+  transition:grid-template-columns .42s var(--ease-out)
+}
+html.left-collapsed .main-container {
+  grid-template-columns:0 minmax(0,1fr) 272px
+}
+html.right-collapsed .main-container {
+  grid-template-columns:228px minmax(0,1fr) 0
+}
+html.left-collapsed.right-collapsed .main-container {
+  grid-template-columns:0 minmax(0,1fr) 0
+}
+/* The collapsed track has to follow the width of the screen, so the rules
+   that size the panels at each breakpoint are repeated here. Without this the
+   media query would win and the panel would never close below 1250px. */
+@media(min-width:1600px) {
+  html.left-collapsed .main-container {
+    grid-template-columns:0 minmax(0,1fr) 300px
+  }
+  html.right-collapsed .main-container {
+    grid-template-columns:240px minmax(0,1fr) 0
+  }
+  html.left-collapsed.right-collapsed .main-container {
+    grid-template-columns:0 minmax(0,1fr) 0
+  }
+}
+@media(max-width:1250px) {
+  html.left-collapsed .main-container {
+    grid-template-columns:0 minmax(0,1fr) 240px
+  }
+  html.right-collapsed .main-container {
+    grid-template-columns:204px minmax(0,1fr) 0
+  }
+  html.left-collapsed.right-collapsed .main-container {
+    grid-template-columns:0 minmax(0,1fr) 0
+  }
+}
+@media(max-width:1050px) {
+  /* The right panel is gone at this width, so closing it changes nothing
+     about the grid — only the left one can still close. */
+  html.left-collapsed .main-container,
+  html.left-collapsed.right-collapsed .main-container {
+    grid-template-columns:0 minmax(0,1fr)
+  }
+  html.right-collapsed .main-container {
+    grid-template-columns:190px minmax(0,1fr)
+  }
+}
+@media(max-width:800px) {
+  html.left-collapsed .main-container,
+  html.right-collapsed .main-container,
+  html.left-collapsed.right-collapsed .main-container {
+    grid-template-columns:minmax(0,1fr)
+  }
+}
+/* The panel fades as it goes, so its contents do not smear sideways as the
+   track narrows under them. Its padding goes too: a collapsed panel that
+   still reserves 40px of gutter leaves a strip of nothing beside the work. */
+html.left-collapsed .sidebar-left,
+html.right-collapsed .sidebar-right {
+  opacity:0;
+  pointer-events:none;
+  padding-inline:0
+}
+.sidebar {
+  min-width:0;
+  padding:22px 20px;
+  overflow:auto;
+  scrollbar-width:thin;
+  overflow-x:hidden;
+  transition:opacity .2s var(--ease-out)
+}
+.sidebar-left {
+  display:flex;
+  flex-direction:column;
+  padding-top:16px
+}
+.project-switcher {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 0 26px
+}
+.project-mark {
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border:1px solid var(--control);
+  background:var(--bg);
+  border-radius:8px;
+  color:var(--text-secondary);
+  font-weight:600;
+  flex-shrink:0
+}
+.project-switcher strong {
+  font-size:13px;
+  display:block;
+  font-weight:600
+}
+.project-switcher div>span {
+  font-size: 13px;
+  color:var(--text-secondary)
+}
+.sidebar-section {
+  margin-bottom:28px
+}
+.section-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-height:28px;
+  margin-bottom:9px;
+  color:var(--text-secondary);
+  font-size:12px
+}
+.section-header h2 {
+  font-size:12px;
+  font-weight:500
+}
+.source-list,.agent-list {
+  display:flex;
+  flex-direction:column;
+  gap:3px
+}
+.source-item,.agent-item {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  text-align:left;
+  padding:10px 9px;
+  border:1px solid transparent;
+  background:none;
+  border-radius:8px;
+  transition:background .2s,border-color .2s
+}
+.source-item:hover,.agent-item:hover {
+  background:var(--hover)
+}
+.source-item.selected {
+  background:var(--active);
+  border-color:var(--border)
+}
+.source-item>.icon {
+  color:var(--text-secondary)
+}
+.source-info,.agent-info {
+  flex:1;
+  min-width:0
+}
+.source-name,.agent-name {
+  font-size:13px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.source-status,.agent-state {
+  font-size:12px;
+  color:var(--text-secondary);
+  margin-top:3px
+}
+.agent-item {
+  padding:7px 9px
+}
+.agent-status,.status-dot {
+  display:inline-block;
+  width:6px;
+  height:6px;
+  background:var(--success);
+  border-radius:50%;
+  flex-shrink:0
+}
+.agent-status {
+  background:var(--control)
+}
+.agent-status.working,.agent-status.testing,.agent-status.attacking {
+  background:var(--accent);
+  animation:status-pulse 1.8s ease-in-out infinite
+}
+.sidebar-foot {
+  margin-top:auto;
+  padding-top:22px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size: 13px;
+  color:var(--text-secondary);
+  flex-wrap:wrap
+}
+.sidebar-foot .text-button {
+  font-size:12px
+}
+.sidebar-foot .text-button:first-of-type { margin-left:auto }
+.main-content {
+  overflow:auto;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:16px;
+  min-width:0;
+  padding:24px 28px 28px;
+  scrollbar-width:thin
+}
+/* One context row: where you are, what this session is, and the one action
+   that adds to it. It is the work area's large title: it stays at the top of
+   the pane and contracts as the work scrolls under it, the way a large title
+   collapses into a compact one. */
+.workspace-context {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:14px;
+  margin-bottom:24px;
+  font-size:12px;
+  color:var(--text-secondary);
+  flex-wrap:wrap;
+  position:sticky;
+  top:-1px;
+  z-index:6;
+  background:var(--bg);
+  transition:padding-bottom .28s var(--ease-out)
+}
+.workspace-context.is-collapsed {
+  padding-bottom:9px
+}
+/* The stage name stands in for the large title once it has scrolled away.
+   It is hidden from assistive technology: the heading below already names
+   the stage, so announcing it twice would be noise. */
+.context-stage {
+  font-size:13px;
+  font-weight:600;
+  color:var(--text);
+  white-space:nowrap;
+  opacity:0;
+  transform:translateY(4px);
+  transition:opacity .24s var(--ease-out),transform .24s var(--ease-out)
+}
+.workspace-context.is-collapsed .context-stage {
+  opacity:1;
+  transform:none
+}
+.workspace-context>span:first-child {
+  white-space:nowrap
+}
+.context-meta {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-right:auto;
+  min-width:0
+}
+.workspace-context .text-button {
+  flex-shrink:0;
+  font-size:12px
+}
+/* The tour reports its position: a thin bar above the work area. */
+.demo-progress {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--raised)
+}
+.demo-progress-label {
+  font-size:12px;
+  color:var(--text-secondary);
+  white-space:nowrap
+}
+.demo-progress-track {
+  flex:1;
+  height:3px;
+  background:var(--border);
+  border-radius:2px;
+  overflow:hidden
+}
+.demo-progress-fill {
+  height:100%;
+  background:var(--accent);
+  transform-origin:left;
+  border-radius:2px
+}
+.context-divider {
+  padding:0 9px;
+  color:var(--control)
+}
+.project-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:17px;
+  margin-bottom:28px;
+  font-size:12px;
+  color:var(--text-secondary)
+}
+.project-toolbar>span {
+  display:flex;
+  align-items:center;
+  gap:7px
+}
+.project-toolbar .text-button {
+  flex-shrink:0;
+  font-size:12px
+}
+.stage-view[hidden] {
+  display:none!important
+}
+/* While one stage gives way to the next, the stage that is leaving is lifted
+   out of the flow and laid over the one arriving. If it stayed in the flow it
+   would push the arriving screen down the page, and the two would not read as
+   travelling together. */
+#stageViews {
+  position:relative
+}
+.stage-view.is-leaving {
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  pointer-events:none;
+  z-index:1
+}
+.stage-hero {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:24px
+}
+.stage-title {
+  font-size:26px;
+  letter-spacing:-.6px;
+  line-height:1.4;
+  font-weight:650
+}
+.stage-subtitle {
+  font-size:13px;
+  color:var(--text-secondary);
+  margin-top:7px
+}
+.hero-actions {
+  display:flex;
+  gap:8px;
+  align-items:center
+}
+.stage-index {
+  color:var(--text-secondary);
+  font-size:12px;
+  margin-bottom:7px
+}
+.overview-strip {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:22px;
+  overflow:hidden
+}
+.overview-stat {
+  padding:16px 18px;
+  border-right:1px solid var(--border);
+  min-width:0
+}
+.overview-stat:last-child {
+  border:0
+}
+.overview-stat>span {
+  font-size:12px;
+  color:var(--text-secondary);
+  display:block
+}
+.overview-stat strong {
+  font-size:25px;
+  font-weight:500;
+  display:block;
+  margin-top:5px;
+  font-variant-numeric:tabular-nums;
+  line-height:1.3
+}
+.overview-stat small {
+  font-size:12px;
+  font-weight:400;
+  color:var(--text-secondary);
+  margin-left:5px
+}
+.overview-stat .stat-number {
+  font-variant-numeric:tabular-nums
+}
+/* A figure that does not exist yet is a dash in grey, not a zero. */
+.overview-stat.is-pending strong {
+  color:var(--text-tertiary)
+}
+.overview-stat .risk {
+  color:var(--danger)
+}
+.cards-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);
+  gap:18px;
+  align-items:start
+}
+.card {
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  background:var(--surface-elevated);
+  min-width:0
+}
+/* Cards acknowledge the pointer without a shadow: the border warms and the
+   card lifts a single pixel. */
+.card:hover {
+  border-color:var(--control);
+  transform:translateY(-1px)
+}
+.card {
+  transition:border-color .18s var(--ease-out),transform .18s var(--ease-out)
+}
+.card:focus-within {
+  border-color:var(--control)
+}
+.card.full {
+  grid-column:1/-1
+}
+.card-header {
+  padding:17px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid var(--border);
+  min-height:65px
+}
+.card-title {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:-.2px
+}
+.card-title .icon {
+  color:var(--text-secondary);
+  width:17px;
+  height:17px
+}
+.card-body {
+  padding:19px 20px
+}
+.card-note {
+  font-size: 13px;
+  color:var(--text-secondary);
+  margin-bottom:14px;
+  line-height:1.7
+}
+/* A provenance line says where a figure came from, in the quietest voice. */
+.card-note.provenance {
+  color:var(--text-tertiary);
+  margin-top:-6px
+}
+.data-list {
+  display:flex;
+  flex-direction:column
+}
+.data-row {
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:center;
+  padding:11px 0;
+  border-bottom:1px solid var(--border);
+  min-width:0
+}
+.data-row:last-child {
+  border:0
+}
+.data-label {
+  font-size:13px;
+  color:var(--text-secondary);
+  flex-shrink:0
+}
+.data-value {
+  font-size:13px;
+  font-weight:500;
+  text-align:right;
+  overflow-wrap:anywhere;
+  font-variant-numeric:tabular-nums
+}
+.badge {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border-radius:5px;
+  padding:3px 7px;
+  font-size:12px;
+  font-weight:500;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  transition:background .25s var(--ease-out),color .25s var(--ease-out),border-color .25s var(--ease-out),transform .25s var(--ease-out)
+}
+.badge-warning {
+  color:var(--warning);
+  background:var(--warning-bg)
+}
+.badge-danger {
+  color:var(--danger);
+  background:var(--danger-bg)
+}
+.badge-success {
+  color:var(--success);
+  background:var(--success-bg)
+}
+.badge-neutral {
+  color:var(--text-secondary);
+  background:var(--raised);
+  border:1px solid var(--border)
+}
+.card-footer {
+  border-top:1px solid var(--border);
+  padding:12px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  color:var(--text-secondary);
+  font-size: 13px
+}
+.step-list {
+  list-style:none;
+  margin:0;
+  padding:0
+}
+.task-step {
+  display:flex;
+  gap:12px;
+  padding:13px 0;
+  position:relative;
+  align-items:flex-start
+}
+.task-step:not(:last-child):after {
+  content:"";
+  position:absolute;
+  left:10px;
+  top:38px;
+  bottom:-7px;
+  width:1px;
+  background:var(--border)
+}
+.step-mark {
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:var(--raised);
+  color:var(--text-secondary);
+  border:1px solid var(--border);
+  font-size:11px;
+  flex-shrink:0;
+  position:relative;
+  z-index:1
+}
+.step-mark .icon {
+  width:13px;
+  height:13px;
+  stroke-width:2.2
+}
+.task-step.completed .step-mark {
+  color:var(--success);
+  background:var(--success-bg);
+  border-color:transparent
+}
+.task-step.active .step-mark {
+  color:var(--accent);
+  border-color:var(--accent)
+}
+.step-info {
+  flex:1;
+  min-width:0
+}
+.step-info strong {
+  display:block;
+  font-size:13px;
+  font-weight:500
+}
+.step-info p {
+  font-size: 13px;
+  color:var(--text-secondary);
+  margin-top:3px
+}
+.progress-bar {
+  height:5px;
+  width:100%;
+  background:var(--border);
+  overflow:hidden;
+  border-radius:4px;
+  margin-top:9px
+}
+/* Every step keeps a progress slot so the list never changes height when the
+   active step moves along. An idle slot is a transparent track: the space is
+   reserved, but nothing is drawn. */
+.progress-bar { min-height:5px; }
+.progress-bar.is-hidden { background:transparent; }
+.progress-bar.is-hidden .progress-fill { opacity:0; }
+.progress-fill {
+  height:100%;
+  background:var(--accent);
+  transform-origin:left;
+  border-radius:4px;
+  width:100%;
+  transform:scaleX(0)
+}
+.progress-label {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  color:var(--text-secondary);
+  font-size:12px
+}
+.progress-label strong {
+  color:var(--text);
+  font-size:13px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums
+}
+.code-compare {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:16px
+}
+.code-label {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-size:12px;
+  color:var(--text-secondary);
+  margin-bottom:9px
+}
+.code-block {
+  padding:18px;
+  border-radius:8px;
+  background:var(--terminal);
+  color:var(--terminal-ink);
+  font:12px/1.85 var(--font-mono);
+  white-space:pre;
+  overflow:auto;
+  max-height:360px;
+  margin:0;
+  tab-size:2
+}
+.code-block code {
+  font:inherit
+}
+.stage-footer {
+  margin-top:24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  color:var(--text-secondary);
+  font-size: 13px
+}
+.stage-footer button {
+  flex-shrink:0
+}
+.notice {
+  padding:13px 16px;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text-secondary);
+  font-size: 13px;
+  line-height:1.7;
+  margin-bottom:18px
+}
+.notice.attention {
+  color:var(--warning);
+  background:var(--warning-bg);
+  border-color:color-mix(in srgb,var(--warning) 22%,transparent)
+}
+.sidebar-right {
+  padding:24px 14px 20px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:20px
+}
+.rail-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+.rail-header h2 {
+  font-size:13px
+}
+.live-label {
+  display:flex;
+  align-items:center;
+  gap:5px;
+  font-size:12px;
+  color:var(--text-secondary)
+}
+.terminal {
+  background:var(--terminal);
+  border-radius:12px;
+  overflow:hidden;
+  color:var(--terminal-ink);
+  display:flex;
+  flex-direction:column;
+  min-height:255px;
+  height:43vh;
+  max-height:440px
+}
+.terminal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:13px 13px 10px;
+  font:11px var(--font-mono)
+}
+.terminal-filter {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:0 9px 8px;
+  border-bottom:1px solid #35353a
+}
+.terminal-filter select {
+  color:var(--terminal-muted);
+  background:transparent;
+  border:0;
+  font-size:11px;
+  min-width:0;
+  flex:1;
+  max-width:95px;
+  padding:3px 0
+}
+.terminal-filter select option {
+  background:#1c1c1f;
+  color:#eee
+}
+.terminal-tool {
+  border:0;
+  background:none;
+  color:var(--terminal-muted);
+  font-size:11px;
+  padding:5px;
+  border-radius:4px;
+  white-space:nowrap;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center
+}
+.terminal-tool .icon {
+  width:14px;
+  height:14px
+}
+.terminal-tool:hover {
+  background:#35353a;
+  color:white
+}
+.terminal-body {
+  padding:12px 13px;
+  overflow:auto;
+  flex:1;
+  scrollbar-width:thin;
+  font:11px/1.8 var(--font-mono);
+  overflow-wrap:anywhere
+}
+/* Inside the terminal the surface is dark, so the empty state needs the
+   terminal's own ink rather than the page's secondary text. */
+.terminal-body .empty-state {
+  color:var(--terminal-muted)
+}
+.terminal-line {
+  padding-bottom:11px
+}
+.log-time {
+  display:block;
+  color:var(--terminal-muted);
+  font-size:10px
+}
+.log-success {
+  color:#9adba8
+}
+.log-warning {
+  color:#f0c585
+}
+.log-info {
+  color:#99c9ff
+}
+.log-error {
+  color:#ffa7a7
+}
+.terminal-footer {
+  padding:9px 12px;
+  border-top:1px solid #35353a;
+  display:flex;
+  justify-content:space-between;
+  color:var(--terminal-muted);
+  font-size:10px
+}
+.session-card {
+  padding:2px 0
+}
+.session-card>strong {
+  font-size:14px;
+  font-weight:500
+}
+.session-card p {
+  font-size: 13px;
+  color:var(--text-secondary);
+  margin-top:7px;
+  line-height:1.8
+}
+.pipeline-track {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-top:14px;
+  border-top:1px solid var(--border);
+  padding-top:8px
+}
+.pipeline-step {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  width:100%;
+  text-align:left;
+  padding:5px 6px;
+  border:0;
+  background:none;
+  border-radius:6px;
+  font-size: 13px;
+  color:var(--text-secondary);
+  transition:background .18s,color .18s
+}
+.pipeline-step:hover {
+  background:var(--raised);
+  color:var(--text)
+}
+.pipeline-mark {
+  width:17px;
+  height:17px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:var(--bg);
+  font-size:10px;
+  font-variant-numeric:tabular-nums;
+  color:var(--text-tertiary)
+}
+.pipeline-mark .icon {
+  width:11px;
+  height:11px;
+  stroke-width:2.4
+}
+.pipeline-step.ready .pipeline-mark {
+  border-color:var(--control);
+  color:var(--text-secondary)
+}
+.pipeline-step.done .pipeline-mark {
+  border-color:transparent;
+  background:var(--success-bg);
+  color:var(--success)
+}
+.pipeline-step.active {
+  background:var(--accent-soft);
+  color:var(--text);
+  font-weight:500
+}
+.pipeline-step.active .pipeline-mark {
+  border-color:var(--accent);
+  color:var(--accent)
+}
+.pipeline-step.active .pipeline-name {
+  font-weight:600
+}
+.rail-progress {
+  font-size:12px;
+  color:var(--text-secondary);
+  margin-top:10px;
+  padding-top:9px;
+  border-top:1px solid var(--border)
+}
+.rail-note {
+  display:flex;
+  gap:9px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+  color:var(--text-secondary);
+  font-size: 13px;
+  line-height:1.8
+}
+.rail-note .icon {
+  width:16px;
+  height:16px;
+  margin-top:3px
+}
+.rail-export {
+  margin-top:auto;
+  width:100%
+}
+.chat-layout {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:18px;
+  margin-bottom:18px
+}
+.chat-panel {
+  display:flex;
+  flex-direction:column;
+  height:450px
+}
+.chat-messages {
+  flex:1;
+  overflow:auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:18px
+}
+.chat-message {
+  max-width:94%;
+  align-self:flex-start
+}
+.chat-message.user {
+  align-self:flex-end
+}
+.chat-author {
+  font-size:11px;
+  color:var(--text-secondary);
+  margin-bottom:5px
+}
+.chat-message.user .chat-author {
+  text-align:right
+}
+.chat-bubble {
+  padding:11px 13px;
+  border-radius:10px;
+  background:var(--raised);
+  font-size:13px;
+  line-height:1.8;
+  white-space:pre-line;
+  overflow-wrap:anywhere
+}
+.chat-message.user .chat-bubble {
+  background:var(--accent-soft)
+}
+.chat-composer {
+  padding:12px;
+  border-top:1px solid var(--border);
+  display:flex;
+  gap:8px;
+  align-items:flex-end
+}
+.chat-composer textarea {
+  resize:none;
+  flex:1;
+  min-width:0;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  padding:6px;
+  font-size:13px;
+  max-height:100px
+}
+.prototype-panel iframe {
+  border:0;
+  background:white;
+  width:100%;
+  flex:1;
+  min-height:0
+}
+.prototype-toolbar {
+  padding:9px 14px;
+  display:flex;
+  justify-content:space-between;
+  font-size: 13px;
+  color:var(--text-secondary);
+  border-bottom:1px solid var(--border)
+}
+.contract-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px
+}
+/* The trace shows where each requirement landed in the contract set. */
+.requirement-trace {
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid var(--border)
+}
+.requirement-trace .card-title { font-size:13px; margin:0 }
+.requirement-list {
+  list-style:none;
+  margin:10px 0 0;
+  padding:0
+}
+.requirement-row {
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid var(--border);
+  font-size:13px
+}
+.requirement-row:last-child { border-bottom:0 }
+.requirement-index {
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--raised);
+  border:1px solid var(--border);
+  font-size:11px;
+  color:var(--text-secondary)
+}
+.requirement-text { color:var(--text); overflow-wrap:anywhere }
+.requirement-target {
+  font-family:var(--font-mono);
+  font-size: 13px;
+  color:var(--text-secondary);
+  white-space:nowrap
+}
+.requirement-kind {
+  font-size:12px;
+  color:var(--text-secondary);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1px 6px;
+  white-space:nowrap
+}
+.contract-item {
+  padding:18px;
+  text-align:left;
+  border:1px solid var(--border);
+  background:var(--raised);
+  border-radius:8px;
+  transition:border-color .2s,background .2s;
+  min-width:0
+}
+.contract-item:hover {
+  border-color:var(--control);
+  background:var(--bg)
+}
+.contract-item>strong {
+  display:block;
+  font:12px var(--font-mono);
+  margin:12px 0 6px;
+  overflow-wrap:anywhere
+}
+.contract-item>span {
+  font-size: 13px;
+  color:var(--text-secondary)
+}
+/* A thin line between the tabs and the file: what the file is, and how long. */
+.contract-meta {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 2px;
+  font-size:12px;
+  color:var(--text-secondary);
+  border-bottom:1px solid var(--border)
+}
+.approval-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:20px
+}
+.approval-row p {
+  font-size: 13px;
+  color:var(--text-secondary)
+}
+.swarm-grid {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:18px
+}
+.swarm-card {
+  padding:18px 16px
+}
+.swarm-card h3 {
+  font-size:13px;
+  font-weight:500;
+  margin-bottom:18px
+}
+.swarm-output {
+  font-size: 13px;
+  color:var(--text-secondary);
+  margin-top:16px;
+  line-height:1.9
+}
+.swarm-line {
+  display:flex;
+  align-items:flex-start;
+  gap:7px
+}
+.swarm-line+.swarm-line {
+  margin-top:4px
+}
+.swarm-line .icon {
+  width:13px;
+  height:13px;
+  flex-shrink:0;
+  margin-top:3px;
+  color:var(--text-tertiary)
+}
+.swarm-line.done .icon {
+  color:var(--success)
+}
+.log-list {
+  list-style:none;
+  padding:0;
+  margin:0
+}
+.event-row {
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+  font-size: 13px
+}
+.event-row:last-child {
+  border:0
+}
+.event-row time {
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
+  color:var(--text-secondary);
+  white-space:nowrap
+}
+.event-row>.icon {
+  width:15px;
+  height:15px;
+  flex-shrink:0;
+  margin-top:2px
+}
+.event-row.success>.icon {
+  color:var(--success)
+}
+.event-row.warning>.icon {
+  color:var(--warning)
+}
+.event-row.danger>.icon {
+  color:var(--danger)
+}
+/* One divided strip rather than three loose figures: the lead figure answers
+   the screen's question, its siblings step down. */
+.test-metrics {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0;
+  margin-bottom:18px;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border)
+}
+.test-metrics>div {
+  padding:14px 16px 14px 0
+}
+.test-metrics>div+div {
+  padding-left:16px;
+  border-left:1px solid var(--border)
+}
+.test-metrics strong {
+  display:block;
+  font-size:24px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums
+}
+.test-metrics .lead strong {
+  font-size:30px;
+  color:var(--accent)
+}
+.test-metrics span {
+  display:block;
+  font-size:12px;
+  color:var(--text-secondary)
+}
+/* The captured problems, named: the count 捕获问题 has a body on screen. */
+.issue-list {
+  list-style:none;
+  margin:0 0 16px;
+  padding:0;
+  border-bottom:1px solid var(--border)
+}
+.issue-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 0;
+  border-bottom:1px solid var(--border);
+  font-size:13px
+}
+.issue-row:last-child { border-bottom:0 }
+.issue-mark {
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:var(--raised);
+  color:var(--text-secondary);
+  font-size:11px;
+  flex-shrink:0
+}
+.issue-mark .icon { width:12px; height:12px }
+.issue-row.found .issue-mark { color:var(--danger); border-color:var(--danger); background:var(--danger-bg) }
+.issue-row.fixed .issue-mark { color:var(--success); border-color:transparent; background:var(--success-bg) }
+.issue-info { flex:1; min-width:0 }
+.issue-info strong { font-weight:500 }
+.issue-info p { font-size: 13px; color:var(--text-secondary); margin-top:2px }
+.issue-state {
+  font-size:12px;
+  color:var(--text-secondary);
+  white-space:nowrap
+}
+.issue-row.found .issue-state { color:var(--danger) }
+.issue-row.fixed .issue-state { color:var(--success) }
+.test-preview {
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:14px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden
+}
+.mini-browser-bar {
+  font-size:10px;
+  color:var(--text-secondary);
+  border-bottom:1px solid var(--border);
+  padding-bottom:10px;
+  margin-bottom:12px;
+  font-family:var(--font-mono)
+}
+.test-preview h4 {
+  margin:0 0 10px;
+  font-size:12px
+}
+.mini-table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px
+}
+.mini-table td {
+  padding:10px 4px;
+  border-bottom:1px solid var(--border)
+}
+.mini-table td:last-child {
+  text-align:right
+}
+.mini-table tr.tested {
+  background:var(--accent-soft)
+}
+.test-cursor {
+  position:absolute;
+  top:58px;
+  left:65%;
+  width:16px;
+  height:20px;
+  pointer-events:none;
+  color:var(--accent);
+  opacity:0
+}
+.test-cursor svg {
+  width:100%;
+  height:100%
+}
+.delivery-summary {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:24px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--raised);
+  margin-bottom:22px
+}
+.delivery-summary h2 {
+  font-size:20px;
+  letter-spacing:-.4px
+}
+.delivery-summary p {
+  font-size:13px;
+  color:var(--text-secondary);
+  margin-top:8px
+}
+.deliverable-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  margin-bottom:22px
+}
+/* Delivery manifest: a list of real deliverables with their state, not a grid of equal cards. */
+.manifest-card {
+  margin-bottom:22px
+}
+.manifest-list {
+  list-style:none;
+  margin:0;
+  padding:0
+}
+.manifest-row {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:15px 0;
+  border-bottom:1px solid var(--border)
+}
+.manifest-row:last-child {
+  border-bottom:0
+}
+.manifest-info {
+  flex:1;
+  min-width:0
+}
+.manifest-info strong {
+  display:block;
+  font-size:14px;
+  font-weight:500
+}
+.manifest-info p {
+  font-size:13px;
+  color:var(--text-secondary);
+  margin-top:4px;
+  line-height:1.6
+}
+.manifest-format {
+  font:12px var(--font-mono);
+  color:var(--text-tertiary);
+  flex-shrink:0
+}
+.manifest-row .btn {
+  flex-shrink:0;
+  min-width:96px
+}
+.manifest-row.locked {
+  opacity:.62
+}
+.manifest-row.locked .manifest-info strong {
+  color:var(--text-secondary)
+}
+.manifest-blocked {
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid var(--border)
+}
+.manifest-blocked-title {
+  font-size:12px;
+  color:var(--text-secondary);
+  margin-bottom:2px
+}
+.manifest-hint {
+  font-size: 13px;
+  color:var(--text-secondary);
+  margin-top:12px
+}
+.deliverable {
+  padding:20px
+}
+.deliverable h3 {
+  font-size:14px;
+  margin-bottom:8px
+}
+.deliverable p {
+  font-size: 13px;
+  color:var(--text-secondary);
+  min-height:38px;
+  line-height:1.7;
+  margin-bottom:18px
+}
+.skill-row {
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:center;
+  padding:17px 0;
+  border-bottom:1px solid var(--border)
+}
+.skill-row:last-child {
+  border:0
+}
+.skill-row strong {
+  font-size:13px;
+  font-weight:500
+}
+.skill-row p {
+  font-size: 13px;
+  color:var(--text-secondary);
+  margin-top:4px
+}
+dialog {
+  padding:26px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--bg);
+  color:var(--text);
+  width:min(620px,calc(100% - 32px));
+  max-height:85dvh;
+  overflow:auto;
+  box-shadow:0 24px 80px #0003
+}
+dialog::backdrop {
+  background:#0006
+}
+.dialog-top {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:22px
+}
+.dialog-top h2 {
+  font-size:21px;
+  margin-top:5px;
+  letter-spacing:-.4px
+}
+.dialog-actions {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:22px
+}
+.field {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-bottom:18px
+}
+.field label {
+  font-size:13px;
+  font-weight:500
+}
+.field input,.field textarea,.field select,.command-search {
+  width:100%;
+  border:1px solid var(--control);
+  border-radius:8px;
+  padding:10px 12px;
+  color:var(--text);
+  background:var(--bg);
+  font-size:14px
+}
+.field textarea {
+  resize:vertical;
+  min-height:90px
+}
+.field small {
+  font-size: 13px;
+  color:var(--text-secondary)
+}
+.form-error {
+  font-size: 13px;
+  color:var(--danger);
+  margin-top:8px
+}
+.dialog-tabs {
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-bottom:14px
+}
+.dialog-tabs button {
+  font-size:12px;
+  padding:7px 10px;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:6px
+}
+.dialog-tabs button[aria-selected="true"] {
+  color:var(--accent);
+  border-color:var(--accent)
+}
+.command-list {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  margin-top:12px;
+  max-height:48vh;
+  overflow:auto
+}
+.command-item {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  text-align:left;
+  gap:16px;
+  border:0;
+  padding:12px;
+  background:none;
+  border-radius:8px;
+  font-size:13px
+}
+.command-item:hover,.command-item:focus-visible {
+  background:var(--raised)
+}
+kbd {
+  font-size:11px;
+  color:var(--text-secondary);
+  padding:2px 5px;
+  border:1px solid var(--border);
+  border-radius:4px
+}
+.empty-state {
+  text-align:center;
+  padding:30px 12px;
+  color:var(--text-secondary);
+  font-size:13px
+}
+.toast-region {
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:200;
+  pointer-events:none;
+  max-width:calc(100vw - 32px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px
+}
+.toast {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--text);
+  color:var(--bg);
+  padding:13px 18px;
+  border-radius:10px;
+  font-size:13px;
+  box-shadow:0 6px 25px #0002;
+  max-width:100%;
+  cursor:pointer
+}
+.toast-error {
+  background:var(--danger);
+  color:#fff
+}
+.toast-success {
+  background:var(--success);
+  color:#fff
+}
+[data-theme="dark"] .toast-error,
+[data-theme="dark"] .toast-success {
+  color:#101115
+}
+.toast .icon {
+  width:17px;
+  height:17px
+}
+.shortcut-list {
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:16px;
+  font-size:13px
+}
+.motion-control {
+  margin-top:24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:13px
+}
+.busy-icon {
+  display:inline-block;
+  width:13px;
+  height:13px;
+  border:2px solid currentColor;
+  border-right-color:transparent;
+  border-radius:50%;
+  animation:spin .8s linear infinite
+}
+/* The stop control sits beside the running button, not inside it. */
+.job-controls {
+  display:inline-flex;
+  align-items:center;
+  gap:8px
+}
+.job-stop {
+  align-self:center
+}
+.job-stop .icon { width:13px; height:13px }
+.btn.is-running { cursor:progress }
+.source-details {
+  display:grid;
+  grid-template-columns:90px minmax(0,1fr);
+  gap:12px;
+  font-size:13px
+}
+.source-details dt {
+  color:var(--text-secondary)
+}
+.source-details dd {
+  margin:0;
+  overflow-wrap:anywhere
+}
+@keyframes spin {
+  to {
+    transform:rotate(360deg)
+  }
+}
+@keyframes status-pulse {
+  50% {
+    opacity:.4
+  }
+}
+@keyframes simple-enter {
+  from {
+    opacity:0;
+    transform:translateY(8px)
+  }
+  to {
+    opacity:1;
+    transform:none
+  }
+}
+.motion-fallback {
+  animation:simple-enter .3s var(--ease)
+}
+@media(min-width:1600px) {
+  .main-content {
+    padding:28px 36px
+  }
+  .main-container {
+    grid-template-columns:240px minmax(0,1fr) 300px
+  }
+  .nav-brand {
+    flex-basis:207px
+  }
+  .stage-pill {
+    padding-inline:20px
+  }
+  .sidebar-right {
+    padding-left:24px
+  }
+}
+@media(max-width:1250px) {
+  .navbar {
+    gap:12px;
+    padding:0 18px
+  }
+  .nav-brand {
+    flex-basis:180px
+  }
+  .brand-sub {
+    display:none
+  }
+  .nav-title {
+    font-size:16px
+  }
+  .stage-pill {
+    padding:12px 9px
+  }
+  .main-container {
+    grid-template-columns:204px minmax(0,1fr) 240px
+  }
+  .sidebar {
+    padding-inline:16px
+  }
+  .main-content {
+    padding:22px 20px
+  }
+  .stage-hero {
+    align-items:flex-start
+  }
+  .stage-title {
+    font-size:23px
+  }
+  .hero-actions .btn {
+    padding-inline:10px
+  }
+  .cards-grid,.chat-layout {
+    grid-template-columns:minmax(0,1fr)
+  }
+  .swarm-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .overview-stat {
+    padding:14px 12px
+  }
+  .overview-stat strong {
+    font-size:23px
+  }
+  .contract-grid {
+    gap:8px
+  }
+  .contract-item {
+    padding:12px
+  }
+  .approval-row {
+    align-items:flex-start;
+    flex-direction:column
+  }
+}
+@media(max-width:1050px) {
+  .main-container {
+    grid-template-columns:190px minmax(0,1fr);
+    padding-right:10px
+  }
+  .sidebar-right {
+    display:none
+  }
+  /* The right panel is already away at this width, so the button that opens
+     and closes it would be offering something that cannot happen. */
+  [data-action="toggle-right"] {
+    display:none
+  }
+  .nav-brand {
+    flex-basis:164px
+  }
+  .navbar {
+    gap:8px
+  }
+  .stage-pill {
+    padding-inline:8px;
+    font-size:12px
+  }
+  .nav-actions {
+    gap:3px
+  }
+  .demo-btn {
+    font-size:12px;
+    padding-inline:10px
+  }
+  .main-content {
+    padding:24px
+  }
+  .cards-grid,.chat-layout {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)
+  }
+  .stage-footer {
+    padding-bottom:28px
+  }
+  .code-compare {
+    grid-template-columns:minmax(0,1fr)
+  }
+  .toast-region {
+    bottom:76px
+  }
+}
+@media(max-width:800px) {
+  .navbar {
+    height:104px;
+    flex-wrap:wrap;
+    padding:10px 20px 0;
+    gap:0;
+    align-content:flex-start;
+    justify-content:space-between
+  }
+  .nav-brand {
+    height:36px;
+    flex-basis:auto
+  }
+  .brand-sub {
+    display:inline;
+    margin-left:10px;
+    font-size:11px;
+    letter-spacing:0
+  }
+  .nav-actions {
+    height:36px;
+    gap:7px
+  }
+  .nav-stages {
+    order:3;
+    flex:0 0 100%;
+    height:54px;
+    justify-content:space-between;
+    align-items:center;
+    gap:0
+  }
+  .stage-pill {
+    padding:12px 10px;
+    font-size:13px
+  }
+  .nav-indicator {
+    bottom:3px
+  }
+  .main-container {
+    grid-template-columns:minmax(0,1fr);
+    height:calc(100dvh - 104px);
+    padding:0 12px 12px
+  }
+  .sidebar-left {
+    display:none
+  }
+  /* The left panel is away at this width too, so its button goes with it. */
+  [data-action="toggle-left"] {
+    display:none
+  }
+  .main-content {
+    padding:22px 24px;
+    border-radius:12px
+  }
+  .stage-title {
+    font-size:25px
+  }
+  .workspace-context {
+    margin-bottom:14px
+  }
+  .swarm-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+  .swarm-card {
+    padding:16px 12px
+  }
+  .cards-grid {
+    gap:16px
+  }
+  .card-header {
+    padding:16px
+  }
+  .card-body {
+    padding:16px
+  }
+  .code-compare {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)
+  }
+}
+@media(max-width:620px) {
+  .navbar {
+    padding-inline:16px
+  }
+  .brand-sub {
+    display:none
+  }
+  .nav-title {
+    font-size:16px
+  }
+  .nav-logo {
+    width:27px;
+    height:27px
+  }
+  .nav-actions {
+    gap:3px
+  }
+  .stage-pill {
+    font-size:12px;
+    padding:12px 5px;
+    flex:1
+  }
+  .main-container {
+    padding:0
+  }
+  .main-content {
+    padding:18px 16px 72px;
+    border-radius:0;
+    border-inline:0;
+    border-bottom:0
+  }
+  .workspace-context {
+    font-size:11px;
+    margin-bottom:12px
+  }
+  .context-meta {
+    font-size:11px;
+    max-width:100%
+  }
+  .workspace-context .text-button {
+    font-size:11px
+  }
+  .stage-hero {
+    flex-wrap:wrap;
+    gap:15px;
+    margin-bottom:20px
+  }
+  .stage-title {
+    font-size:23px
+  }
+  .stage-subtitle {
+    font-size:12px
+  }
+  .stage-index {
+    font-size:11px
+  }
+  .hero-actions {
+    width:100%;
+    justify-content:flex-end
+  }
+  .hero-actions .btn {
+    min-height:40px
+  }
+  .overview-strip {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    margin-bottom:18px
+  }
+  .overview-stat {
+    padding:13px 16px
+  }
+  .overview-stat:nth-child(2) {
+    border-right:0
+  }
+  .overview-stat:nth-child(-n+2) {
+    border-bottom:1px solid var(--border)
+  }
+  .overview-stat strong {
+    font-size:24px
+  }
+  .cards-grid,.chat-layout,.code-compare,.contract-grid,.deliverable-grid {
+    grid-template-columns:minmax(0,1fr)
+  }
+  .card-header {
+    padding:15px 16px
+  }
+  .card-title {
+    font-size:14px
+  }
+  .card-body {
+    padding:16px
+  }
+  .data-row {
+    gap:10px
+  }
+  .data-value {
+    max-width:65%;
+    font-size:12px
+  }
+  .data-label {
+    font-size:12px
+  }
+  .code-block {
+    padding:14px;
+    font-size:11px;
+    max-height:280px
+  }
+  .stage-footer {
+    font-size:11px;
+    align-items:flex-start;
+    flex-direction:column;
+    gap:12px
+  }
+  .stage-footer>.btn {
+    align-self:flex-end
+  }
+  .chat-layout {
+    gap:18px
+  }
+  .chat-panel {
+    height:430px
+  }
+  .contract-grid {
+    gap:8px
+  }
+  .contract-item {
+    display:grid;
+    grid-template-columns:20px 1fr auto;
+    align-items:center;
+    gap:12px;
+    padding:14px
+  }
+  .contract-item>strong {
+    margin:0;
+    font-size:12px
+  }
+  .contract-item>span {
+    font-size:11px
+  }
+  .approval-row {
+    align-items:stretch
+  }
+  .approval-row .btn {
+    width:100%
+  }
+  .swarm-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px
+  }
+  .swarm-card {
+    padding:16px
+  }
+  .swarm-card h3 {
+    font-size:12px
+  }
+  .delivery-summary {
+    padding:20px;
+    align-items:flex-start;
+    flex-direction:column
+  }
+  .delivery-summary h2 {
+    font-size:19px
+  }
+  .skill-row {
+    align-items:flex-start
+  }
+  .skill-row .badge {
+    flex-shrink:0
+  }
+  .toast-region {
+    width:max-content;
+    max-width:calc(100% - 32px)
+  }
+  .toast {
+    font-size:12px
+  }
+  .btn,.text-button,.icon-button {
+    min-height:40px
+  }
+  .nav-actions .icon-button {
+    width:32px
+  }
+  .dialog-top .icon-button {
+    min-width:40px
+  }
+  dialog {
+    padding:22px 18px
+  }
+  .dialog-tabs button {
+    flex:1
+  }
+  .terminal-tool {
+    min-height:32px
+  }
+  .field input,.field textarea,.field select {
+    font-size:16px
+  }
+}
+.log-time,.terminal-footer,.mini-browser-bar {
+  font-size:11px
+}
+.overview-stat>span,.data-label,.data-value,.step-info strong,.step-info p,.card-note,.stage-subtitle,.source-name,.agent-name,.contract-item>span,.swarm-output,.event-row,.skill-row p {
+  font-size:13px
+}
+.terminal-body {
+  font-size:13px
+}
+.source-status,.agent-state,.section-header,.section-header h2,.session-card p,.rail-note {
+  font-size: 13px
+}
+/* Labels that name a place, a stage or a status read at 12px: still small
+   enough to sit under the value, large enough to be read without zooming. */
+.workspace-context,.live-label,.stage-footer,.project-switcher div>span,.project-toolbar>span,.project-toolbar .text-button,.stage-index,.brand-sub,.chat-author {
+  font-size:12px
+}
+.progress-fill {
+  transition:none
+}
+.statistic-action {
+  border:0;
+  border-right:1px solid var(--border);
+  text-align:left;
+  background:none;
+  color:var(--text);
+  font-family:inherit
+}
+.statistic-action:hover {
+  background:var(--raised)
+}
+/* The number of records is visible on the narrow layout: the user needs to
+   know there is something to open. */
+.log-count-badge {
+  position:absolute;
+  top:2px;
+  right:2px;
+  min-width:15px;
+  height:15px;
+  padding:0 3px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:var(--accent);
+  color:#fff;
+  font-size:9px;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  pointer-events:none
+}
+.log-count-badge[data-empty="true"] { display:none }
+.terminal {
+  height:310px;
+  max-height:42vh
+}
+.task-step {
+  padding-block:10px
+}
+.task-step:not(:last-child):after {
+  top:34px;
+  bottom:-6px
+}
+.card-body {
+  padding-block:16px
+}
+.stage-hero {
+  margin-bottom:20px
+}
+@media(min-width:801px) and (max-width:1050px) {
+  .nav-brand {
+    flex-basis:148px
+  }
+  .navbar {
+    padding-inline:14px
+  }
+  .nav-actions {
+    gap:0
+  }
+}
+@media(max-width:620px) {
+  .data-label,.data-value,.step-info strong,.step-info p,.card-note,.stage-subtitle,.overview-stat>span {
+    font-size:13px
+  }
+  .toast-region {
+    bottom:24px
+  }
+  .main-content {
+    padding-bottom:28px
+  }
+}
+/* ---- A figure that arrives digit by digit -------------------------------
+   The number is drawn as a strip of digits per column, and the strip moves.
+   The real value stays in the text for screen readers and for search. */
+.roll {
+  display:inline-block
+}
+.roll__digits {
+  display:inline-flex;
+  align-items:flex-start;
+  font-variant-numeric:tabular-nums
+}
+.roll__col {
+  display:inline-block;
+  height:1.06em;
+  overflow:hidden;
+  line-height:1.06
+}
+.roll__strip {
+  display:flex;
+  flex-direction:column
+}
+.roll__strip>span {
+  height:1.06em;
+  line-height:1.06
+}
+/* ---- A segmented control for the three contract files --------------------
+   One track, one travelling capsule. The selected file is marked by the
+   capsule behind it, not by a coloured border on the label. */
+.dialog-tabs {
+  position:relative;
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+  padding:3px;
+  margin-bottom:14px;
+  background:var(--surface);
+  border-radius:9px
+}
+.dialog-tabs .seg-indicator {
+  position:absolute;
+  top:0;
+  left:0;
+  width:120px;
+  height:32px;
+  background:var(--surface-elevated);
+  border-radius:7px;
+  opacity:0;
+  pointer-events:none;
+  z-index:0;
+  transform-origin:left center
+}
+.dialog-tabs button {
+  position:relative;
+  z-index:1;
+  font-size:12px;
+  padding:7px 10px;
+  background:none;
+  border:0;
+  border-radius:7px;
+  color:var(--text-secondary);
+  transition:color .18s
+}
+.dialog-tabs button[aria-selected="true"] {
+  color:var(--text);
+  font-weight:500
+}
+@media(max-width:620px) {
+  /* On a phone the panel is a sheet: it rises from the bottom edge rather
+     than floating in the middle of the screen. */
+  dialog {
+    position:fixed;
+    inset:auto 0 0 0;
+    margin:0;
+    width:100%;
+    /* The browser's own dialog rule caps the width and leaves a gutter on
+       either side. A sheet that does not reach the edges is a floating panel,
+       not a sheet. */
+    max-width:100%;
+    max-height:86svh;
+    border-radius:16px 16px 0 0;
+    border-bottom:0;
+    padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))
+  }
+  dialog::backdrop {
+    background:#0005
+  }
+  /* The grab bar is the sheet's handle. Without it the panel is a dialog, and
+     a dialog that slides under the thumb is a fault rather than a gesture. */
+  .sheet-grab {
+    position:absolute;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    width:38px;
+    height:5px;
+    border-radius:3px;
+    background:var(--control);
+    cursor:grab;
+    touch-action:none
+  }
+  dialog.is-dragging {
+    cursor:grabbing;
+    user-select:none
+  }
+  dialog.is-dragging .sheet-grab {
+    cursor:grabbing
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*:before,*:after {
+    animation:none!important;
+    transition:none!important;
+    scroll-behavior:auto!important
+  }
+}
+[data-motion="reduced"] *,[data-motion="reduced"] *:before,[data-motion="reduced"] *:after {
+  animation:none!important;
+  transition:none!important;
+  scroll-behavior:auto!important
+}
+/* ---- The prototype preview -----------------------------------------------
+   The prototype is what the user came to look at, so it takes the whole width
+   of the work area and stands at a size worth looking at. The device switch
+   changes the frame the preview is shown in, which is what makes the size
+   switcher worth having. The panel grows with the frame: a prototype that is
+   clipped is a preview that cannot be reviewed. */
+.prototype-panel {
+  display:flex;
+  flex-direction:column;
+  margin-bottom:18px;
+  overflow:hidden;
+  align-self:stretch
+}
+.prototype-actions {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end
+}
+.proto-open-new {
+  width:34px;
+  height:34px
+}
+.prototype-stage {
+  padding:20px;
+  background:var(--raised);
+  display:flex;
+  justify-content:center
+}
+.browser-frame {
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 1px 3px #0000000a
+}
+/* The browser shell: a toolbar that says "this is the running app", not a
+   device frame. It matches the address-bar idiom of the factory preview. */
+.browser-toolbar {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface-elevated)
+}
+.browser-lock {
+  width:9px;
+  height:12px;
+  border:1.5px solid var(--text-secondary);
+  border-radius:2px;
+  position:relative;
+  flex-shrink:0;
+  opacity:.7
+}
+.browser-lock:after {
+  content:"";
+  position:absolute;
+  top:-5px;
+  left:1px;
+  width:4px;
+  height:5px;
+  border:1.5px solid var(--text-secondary);
+  border-bottom:0;
+  border-radius:3px 3px 0 0
+}
+.browser-address {
+  flex:1;
+  min-width:0;
+  font-size:11px;
+  color:var(--text-secondary);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:4px 9px;
+  display:flex;
+  align-items:center;
+  gap:6px
+}
+.browser-address .browser-lock {
+  width:7px;
+  height:9px
+}
+.browser-address .browser-lock:after {
+  top:-4px;
+  width:3px;
+  height:4px
+}
+.browser-actions {
+  display:flex;
+  align-items:center;
+  gap:4px
+}
+.browser-refresh {
+  width:12px;
+  height:12px;
+  border:1.5px solid var(--text-secondary);
+  border-left-color:transparent;
+  border-radius:50%;
+  position:relative;
+  flex-shrink:0;
+  opacity:.75
+}
+.browser-refresh:after {
+  content:"";
+  position:absolute;
+  top:-2px;
+  left:2px;
+  width:5px;
+  height:3px;
+  border-top:1.5px solid var(--text-secondary);
+  transform:rotate(35deg);
+  transform-origin:left top
+}
+.browser-viewport {
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:column
+}
+.browser-viewport iframe {
+  border:0;
+  background:white;
+  width:100%;
+  flex:1;
+  min-height:0
+}
+/* The desktop preview is the working size: it fills the panel. */
+.prototype-stage[data-device="desktop"] .browser-frame {
+  height:700px
+}
+/* The tablet and the phone are shown at their real sizes, so the switcher
+   tells the truth about what the layout will look like on each. */
+.prototype-stage[data-device="tablet"] .browser-frame {
+  width:834px;
+  max-width:100%;
+  height:760px
+}
+.prototype-stage[data-device="phone"] .browser-frame {
+  width:390px;
+  max-width:100%;
+  height:780px;
+  border-radius:22px
+}
+.prototype-panel .card-note.prototype-note {
+  padding:14px 20px;
+  margin:0
+}
+/* A segmented control for the device sizes: the same idiom as the stage
+   strip and the contract tabs, so the whole interface has one vocabulary. */
+.seg-control {
+  position:relative;
+  display:inline-flex;
+  gap:2px;
+  padding:3px;
+  background:var(--track);
+  border-radius:9px;
+  isolation:isolate
+}
+.seg-control .seg-indicator {
+  position:absolute;
+  top:3px;
+  left:0;
+  width:120px;
+  height:28px;
+  border-radius:7px;
+  background:var(--surface-elevated);
+  opacity:0;
+  pointer-events:none;
+  z-index:0;
+  transform-origin:left center
+}
+.seg-control button {
+  position:relative;
+  z-index:1;
+  border:0;
+  background:none;
+  padding:7px 12px;
+  font-size:13px;
+  color:var(--text-secondary);
+  border-radius:7px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  transition:color .18s
+}
+.seg-control button[aria-selected="true"] {
+  color:var(--text);
+  font-weight:500
+}
+.seg-control button .icon {
+  width:14px;
+  height:14px
+}
+/* ---- The run log as a page -----------------------------------------------
+   The log was a column competing with the work for the same width. It is now
+   a page of its own: entered from the top bar, left again by a button or by
+   Escape. */
+.log-view {
+  display:flex;
+  flex-direction:column;
+  gap:18px
+}
+.log-view[hidden] {
+  display:none!important
+}
+.log-view-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--border)
+}
+.terminal-page {
+  height:min(70vh,720px);
+  max-height:none;
+  min-height:320px
+}
+.terminal-page .terminal-body {
+  font-size:13px
+}
+/* The stage strip has nothing to mark on the log page, so it steps back
+   instead of pointing at a stage that is not on screen. */
+.nav-stages.is-dimmed {
+  opacity:.45
+}
+.nav-stages.is-dimmed .nav-selection,
+.nav-stages.is-dimmed .nav-hover {
+  opacity:0
+}
+.run-log-button {
+  position:relative
+}
+.run-log-button .log-count-badge {
+  position:absolute;
+  top:2px;
+  right:2px
+}
+/* The run-log button keeps its place in the bar on every size; the floating
+   button it replaced was covering the work. */
+@media(max-width:900px) {
+  .log-view-head {
+    flex-direction:column;
+    align-items:stretch
+  }
+  .log-view-head .hero-actions {
+    width:100%;
+    justify-content:flex-start
+  }
+  .prototype-stage {
+    padding:12px
+  }
+  .prototype-stage[data-device="desktop"] .browser-frame {
+    height:560px
+  }
+}
+@media(max-width:620px) {
+  .prototype-actions {
+    flex-wrap:wrap
+  }
+  .prototype-actions .btn {
+    font-size:12px;
+    padding-inline:10px
+  }
+  .seg-control button span {
+    display:none
+  }
+  .seg-control button {
+    padding:8px 10px
+  }
+  .log-view-head .hero-actions {
+    flex-wrap:wrap
+  }
+  .terminal-page {
+    height:60vh
+  }
+}
+/* ---- The full-page prototype view ----------------------------------------
+   The prototype pushed to a page of its own: the same language as the run log
+   page — a page entered from the top bar, left again by a button or Escape —
+   with the prototype at a size worth looking at. The work area is the frame;
+   the stage inside is a scrollable band, so a desktop prototype fills the
+   window and a phone prototype stands at its real height. */
+.proto-view {
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  height:100%;
+  min-height:100%;
+  padding-bottom:28px
+}
+.proto-view[hidden] {
+  display:none!important
+}
+.proto-page {
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-height:0
+}
+.proto-page-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+  flex-wrap:wrap;
+  flex-shrink:0
+}
+.proto-page-heading .stage-title {
+  font-size:24px
+}
+.proto-page-actions {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap
+}
+.proto-page-stage {
+  flex:1;
+  min-height:0;
+  padding:20px;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:12px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  height:calc(100dvh - 300px);
+  min-height:420px;
+  max-height:none
+}
+.proto-page-stage .browser-frame {
+  width:100%;
+  max-width:none;
+  height:100%
+}
+.proto-page[data-device="desktop"] .proto-page-stage .browser-frame {
+  height:100%;
+  max-height:760px
+}
+.proto-page[data-device="tablet"] .proto-page-stage .browser-frame {
+  width:834px;
+  max-width:100%;
+  height:100%;
+  max-height:760px
+}
+.proto-page[data-device="phone"] .proto-page-stage .browser-frame {
+  width:390px;
+  max-width:100%;
+  height:100%;
+  max-height:760px;
+  border-radius:22px
+}
+.proto-page-note {
+  font-size:13px;
+  color:var(--text-secondary);
+  line-height:1.7;
+  margin:0
+}
+@media(max-width:900px) {
+  .proto-page-head {
+    flex-direction:column;
+    align-items:stretch
+  }
+  .proto-page-actions {
+    justify-content:flex-start
+  }
+  .proto-page-stage {
+    padding:12px;
+    height:calc(100dvh - 320px);
+    min-height:360px
+  }
+  .proto-page[data-device="desktop"] .proto-page-stage .browser-frame,
+  .proto-page[data-device="tablet"] .proto-page-stage .browser-frame,
+  .proto-page[data-device="phone"] .proto-page-stage .browser-frame {
+    height:100%;
+    max-height:none;
+    min-height:0
+  }
+}
+@media(max-width:620px) {
+  .proto-page-stage {
+    height:calc(100dvh - 300px);
+    min-height:320px
+  }
+  .proto-page-note {
+    font-size:12px
+  }
+}
+/* ---- 需求与契约：左右分栏（软件工厂式） ---------------------------------
+   The conversation and the prototype sit side by side, split by a draggable
+   divider. The split is a percentage written to a CSS variable, so the panes
+   follow the pointer without any reflow of their contents. */
+.req-split {
+  display:flex;
+  align-items:stretch;
+  min-width:0;
+  min-height:0;
+  height:calc(100dvh - 300px);
+  min-height:560px;
+  --req-split:46%
+}
+.req-pane {
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column
+}
+.req-left {
+  width:var(--req-split);
+  flex:0 0 var(--req-split);
+  overflow:hidden
+}
+.req-right {
+  flex:1;
+  min-width:0
+}
+.req-pane-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:2px 0 12px;
+  color:var(--text-secondary);
+  font-size:12px
+}
+.req-pane-head h2 {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:var(--text);
+  font-weight:600
+}
+.req-pane-head .icon {
+  width:15px;
+  height:15px;
+  color:var(--text-secondary)
+}
+.req-pane-body {
+  min-height:0;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  overflow:hidden
+}
+/* The left pane's body scrolls so chat and contracts share the column
+   height; the right pane holds the prototype which fills its column. */
+.req-right .req-pane-body {
+  overflow:hidden
+}
+/* The divider: a narrow band that is mostly a target for the pointer. It
+   darkens while a drag is in progress. */
+.req-divider {
+  flex:0 0 14px;
+  cursor:col-resize;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  align-self:stretch;
+  position:relative;
+  user-select:none;
+  touch-action:none;
+  margin-inline:-1px
+}
+.req-divider:before {
+  content:"";
+  width:1px;
+  height:100%;
+  background:var(--border);
+  transition:background .18s
+}
+.req-divider:hover:before,
+.req-divider.is-dragging:before {
+  background:var(--accent)
+}
+.req-divider .req-grip {
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--text-secondary);
+  opacity:.75;
+  display:grid;
+  place-items:center;
+  pointer-events:none
+}
+.req-divider .req-grip .icon {
+  width:14px;
+  height:14px
+}
+.req-divider:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:-2px;
+  border-radius:4px
+}
+/* The chat inside the left pane keeps its own height, so the contracts can
+   sit below it and the whole pane scrolls as one column. */
+.req-left .req-pane-body {
+  overflow:auto
+}
+.req-chat {
+  height:420px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column
+}
+.req-contracts {
+  flex-shrink:0
+}
+.req-right .prototype-panel {
+  margin-bottom:0;
+  overflow:hidden
+}
+.req-right .prototype-stage {
+  min-height:0;
+  flex:1;
+  display:flex;
+  align-items:flex-start;
+  overflow:auto
+}
+.req-right .prototype-stage[data-device="desktop"] .browser-frame {
+  height:100%;
+  min-height:520px
+}
+.req-right .prototype-stage[data-device="tablet"] .browser-frame {
+  height:100%;
+  min-height:520px;
+  align-self:center
+}
+.req-right .prototype-stage[data-device="phone"] .browser-frame {
+  height:100%;
+  min-height:560px;
+  align-self:center
+}
+/* 制造产物文件浏览器（四路产线） */
+.explorer-panel {
+  margin-top:18px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface-elevated);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column
+}
+.explorer-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 18px;
+  border-bottom:1px solid var(--border);
+  color:var(--text-secondary);
+  font-size:12px
+}
+.explorer-head h2 {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--text)
+}
+.explorer-head .icon {
+  width:15px;
+  height:15px;
+  color:var(--text-secondary)
+}
+.explorer-body {
+  display:grid;
+  grid-template-columns:240px minmax(0,1fr);
+  min-height:360px;
+  max-height:520px
+}
+.file-tree {
+  border-right:1px solid var(--border);
+  background:var(--raised);
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden
+}
+.file-tree-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  font-size:12px;
+  font-weight:600
+}
+.file-tree-count {
+  font-weight:400;
+  color:var(--text-secondary)
+}
+.tree-list {
+  overflow:auto;
+  flex:1;
+  padding:8px
+}
+.tree-group {
+  margin-bottom:6px
+}
+.tree-group-name {
+  padding:6px 8px 4px;
+  font-size:11px;
+  color:var(--text-tertiary)
+}
+.tree-item {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  padding:6px 8px;
+  border:0;
+  background:none;
+  border-radius:6px;
+  font-size:12px;
+  color:var(--text-secondary);
+  text-align:left;
+  cursor:pointer
+}
+.tree-item:hover {
+  background:var(--hover);
+  color:var(--text)
+}
+.tree-item.active {
+  background:var(--active);
+  color:var(--text);
+  font-weight:500
+}
+.tree-item .icon {
+  width:14px;
+  height:14px;
+  color:var(--text-tertiary);
+  flex-shrink:0
+}
+.tree-item.active .icon {
+  color:var(--accent)
+}
+.code-viewer {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--surface-elevated)
+}
+.code-viewer-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 16px;
+  border-bottom:1px solid var(--border);
+  font-size:12px
+}
+.code-viewer-path {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  font-family:var(--font-mono)
+}
+.code-viewer-path .icon {
+  width:14px;
+  height:14px;
+  color:var(--text-secondary);
+  flex-shrink:0
+}
+.code-viewer-langs {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 16px;
+  border-bottom:1px solid var(--border);
+  font-size:11px;
+  color:var(--text-secondary)
+}
+.code-viewer-lang {
+  font-family:var(--font-mono);
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1px 6px
+}
+.code-file {
+  flex:1;
+  overflow:auto;
+  max-height:none;
+  margin:0;
+  border-radius:0;
+  border-top:0
+}
+/* 质检与自愈：浏览器检查视图 */
+.qa-layout {
+  display:grid;
+  grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+  gap:18px;
+  align-items:stretch
+}
+.qa-browser {
+  overflow:hidden;
+  display:flex;
+  flex-direction:column
+}
+.qa-browser-head {
+  padding:14px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px
+}
+.qa-browser-shell {
+  border-bottom:1px solid var(--border);
+  background:var(--surface-elevated)
+}
+.qa-browser-toolbar {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-bottom:1px solid var(--border);
+  background:var(--raised)
+}
+.qa-browser-nav {
+  color:var(--text-secondary);
+  font-size:12px;
+  cursor:pointer;
+  padding:2px 4px
+}
+.qa-browser-address {
+  flex:1;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  height:26px;
+  padding:0 10px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--surface-elevated);
+  color:var(--text-secondary);
+  font-size:11px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.qa-browser-address .browser-lock {
+  width:7px;
+  height:9px
+}
+.qa-browser-address .browser-lock:after {
+  top:-4px;
+  width:3px;
+  height:4px
+}
+.qa-browser-reload {
+  display:grid;
+  place-items:center;
+  width:26px;
+  height:26px;
+  border:0;
+  border-radius:6px;
+  background:none;
+  color:var(--text-secondary);
+  cursor:pointer
+}
+.qa-browser-reload:hover {
+  background:var(--hover);
+  color:var(--text)
+}
+.qa-browser-reload .icon {
+  width:14px;
+  height:14px
+}
+/* The viewport is the inspected app: a browser stage that the cursor tours.
+   It flexes to fill the card, so the browser column ends level with the
+   attack cards beside it rather than stopping short. The inspected page is
+   always light — it is the *target* of the check, not part of the workbench —
+   so it keeps a soft frame to separate it from the shell. */
+.qa-browser-viewport {
+  flex:1;
+  min-height:340px;
+  overflow:auto;
+  background:#f5f5f7;
+  position:relative;
+  border-top:1px solid var(--border);
+  box-shadow:inset 0 1px 0 #0000000a
+}
+.qa-browser-viewport.qa-flash {
+  animation:qa-flash .5s var(--ease)
+}
+@keyframes qa-flash {
+  0% { opacity:.35; filter:brightness(.92) }
+  100% { opacity:1; filter:none }
+}
+.qa-page {
+  width:100%;
+  min-height:100%;
+  background:#f5f5f7;
+  font-size:13px;
+  transition:filter .5s var(--ease)
+}
+.qa-page-clean {
+  outline:2px solid var(--success);
+  outline-offset:-2px
+}
+.qa-page-nav {
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:12px 20px;
+  background:#fff;
+  border-bottom:1px solid #e7e7eb;
+  font-size:12px
+}
+.qa-page-nav .qa-brand {
+  font-weight:600;
+  margin-right:auto
+}
+.qa-page-body {
+  padding:22px
+}
+.qa-page-head h3 {
+  margin:0 0 4px;
+  font-size:18px
+}
+.qa-page-head p {
+  margin:0 0 16px;
+  color:var(--text-secondary);
+  font-size:12px
+}
+.qa-kpi-row {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border:1px solid #e7e7eb;
+  border-radius:10px;
+  overflow:hidden;
+  background:#fff;
+  margin-bottom:16px
+}
+.qa-kpi-row>div {
+  padding:12px 16px;
+  border-right:1px solid #e7e7eb
+}
+.qa-kpi-row>div:last-child {
+  border-right:0
+}
+.qa-kpi-row span {
+  display:block;
+  color:var(--text-secondary);
+  font-size:11px
+}
+.qa-kpi-row strong {
+  display:block;
+  font-size:20px;
+  font-weight:600;
+  margin-top:4px;
+  font-variant-numeric:tabular-nums
+}
+.qa-page-table {
+  background:#fff;
+  border:1px solid #e7e7eb;
+  border-radius:10px;
+  overflow:hidden
+}
+.qa-tr {
+  display:grid;
+  grid-template-columns:1.2fr 1.4fr .8fr .8fr .6fr;
+  gap:10px;
+  padding:10px 16px;
+  border-bottom:1px solid #e7e7eb;
+  align-items:center;
+  font-size:12px
+}
+.qa-tr:last-child {
+  border-bottom:0
+}
+.qa-th {
+  color:var(--text-secondary);
+  font-weight:600;
+  font-size:11px;
+  background:var(--raised)
+}
+.qa-amount {
+  text-align:right;
+  font-variant-numeric:tabular-nums
+}
+.qa-pill {
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:5px;
+  background:var(--warning-bg);
+  color:var(--warning);
+  font-size:11px;
+  white-space:nowrap
+}
+.qa-pill-urgent {
+  background:var(--danger-bg);
+  color:var(--danger)
+}
+.qa-act {
+  color:var(--accent);
+  font-weight:500
+}
+.qa-page-fab {
+  position:absolute;
+  right:30px;
+  bottom:26px;
+  padding:8px 14px;
+  border-radius:9px;
+  background:var(--accent);
+  color:#fff;
+  font-size:12px;
+  box-shadow:0 4px 14px #0071e333
+}
+/* The inspected page changes with the run: later states mark their arrival. */
+.qa-page-progress-2 .qa-page-table .qa-tr:nth-child(2) .qa-pill,
+.qa-page-progress-4 .qa-page-table .qa-tr:nth-child(2) .qa-pill {
+  background:var(--success-bg);
+  color:var(--success)
+}
+.qa-step-list {
+  margin:0;
+  padding:6px 18px 4px;
+  background:var(--surface-elevated)
+}
+.qa-side {
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  min-width:0
+}
+.qa-side .card {
+  margin-bottom:0
+}
+/* The last side card stretches to meet the browser card, so the two columns
+   end on the same line instead of leaving a ragged foot. */
+.qa-side > .card:last-child {
+  flex:1;
+  display:flex;
+  flex-direction:column
+}
+.qa-side > .card:last-child .card-body {
+  flex:1;
+  display:flex;
+  flex-direction:column
+}
+.qa-side > .card:last-child .qa-checks {
+  flex:1
+}
+/* The check rows read as a list of what the browser verified. */
+.qa-checks {
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column
+}
+.qa-check {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  font-size:13px
+}
+.qa-check:last-child {
+  border-bottom:0
+}
+.qa-check-mark {
+  width:18px;
+  height:18px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  border:1px solid var(--border);
+  color:var(--text-tertiary);
+  font-size:12px;
+  flex-shrink:0
+}
+.qa-check-mark .icon {
+  width:12px;
+  height:12px
+}
+.qa-check.pass .qa-check-mark {
+  border-color:transparent;
+  background:var(--success-bg);
+  color:var(--success)
+}
+.qa-check-el {
+  flex:1;
+  min-width:0
+}
+.qa-check-pass {
+  font-size:12px;
+  color:var(--text-secondary);
+  white-space:nowrap
+}
+.qa-check.pass .qa-check-pass {
+  color:var(--success)
+}
+@media(max-width:1050px) {
+  .qa-layout {
+    grid-template-columns:minmax(0,1fr)
+  }
+  .qa-browser-viewport {
+    height:360px
+  }
+}
+@media(max-width:900px) {
+  .explorer-body {
+    grid-template-columns:200px minmax(0,1fr)
+  }
+}
+@media(max-width:800px) {
+  .req-split {
+    flex-direction:column;
+    height:auto;
+    min-height:0
+  }
+  .req-left,
+  .req-right {
+    width:100%!important;
+    flex:none!important
+  }
+  .req-left .req-pane-body {
+    overflow:visible;
+    max-height:none
+  }
+  .req-right .req-pane-body {
+    overflow:visible
+  }
+  .req-right .prototype-stage {
+    overflow:visible
+  }
+  .req-chat {
+    height:400px
+  }
+  .req-divider {
+    flex-direction:row;
+    height:14px;
+    align-self:stretch;
+    cursor:row-resize
+  }
+  .req-divider:before {
+    width:100%;
+    height:1px
+  }
+  .explorer-body {
+    grid-template-columns:minmax(0,1fr);
+    max-height:none
+  }
+  .file-tree {
+    border-right:0;
+    border-bottom:1px solid var(--border);
+    max-height:220px
+  }
+}
+/* ---- Interaction polish ---------------------------------------------------
+   The interface already moves well; these rules give the controls their own
+   quiet replies — a card warms, an icon steps forward, an arrow leans toward
+   its destination. Every move is a transform or a colour change, so it runs
+   on the compositor, and every one is switched off by the reduced-motion
+   rules already in the sheet. */
+.card {
+  transition:border-color .18s var(--ease-out),transform .18s var(--ease-out),box-shadow .24s var(--ease-out)
+}
+.card:hover {
+  border-color:var(--control);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px #0000000d
+}
+/* The title icon steps forward with the card, a hair, so the eye is led to
+   the section name before the body. */
+.card:hover .card-title .icon {
+  transform:translateX(1px) scale(1.06)
+}
+.card-title .icon {
+  transition:transform .22s var(--ease-out)
+}
+/* Buttons: the arrow inside leans toward where it will take you. */
+.btn .icon,
+.text-button .icon {
+  transition:transform .22s var(--ease-out)
+}
+.btn:hover .icon,
+.text-button:hover .icon {
+  transform:translateX(2px)
+}
+.btn-primary:hover .icon,
+.demo-btn:hover .icon {
+  transform:translateX(2px) scale(1.08)
+}
+/* A secondary button warms its border toward the ink on hover, not just the
+   fill, so the whole control reads as live. */
+.btn-secondary {
+  transition:background .18s var(--ease-out),border-color .18s var(--ease-out),transform .18s var(--ease-out)
+}
+.btn-secondary:hover {
+  border-color:var(--text-secondary);
+  background:var(--raised)
+}
+/* The stage pills step in from the edge they will lead to. */
+.stage-pill {
+  transition:color .18s,transform .24s var(--ease-out)
+}
+.stage-pill:hover {
+  transform:translateY(-1px)
+}
+/* The pipeline steps and source rows get a quiet indent on hover, so a list
+   of peers reads as navigable. */
+.pipeline-step,
+.source-item,
+.agent-item,
+.tree-item,
+.contract-item {
+  transition:background .18s,color .18s,transform .2s var(--ease-out)
+}
+.pipeline-step:hover,
+.source-item:hover,
+.agent-item:hover,
+.tree-item:hover,
+.contract-item:hover {
+  transform:translateX(1px)
+}
+/* The focus ring is softer and has its own halo, so keyboard navigation is
+   visible without shouting. */
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  box-shadow:0 0 0 4px var(--accent-soft)
+}
+/* The log badge announces itself with a tiny spring when it grows. */
+.log-count-badge {
+  transition:transform .3s var(--ease-out)
+}
+.log-count-badge[data-empty="false"] {
+  animation:badge-arrive .45s var(--ease-out)
+}
+@keyframes badge-arrive {
+  0% { transform:scale(.4) }
+  70% { transform:scale(1.12) }
+  100% { transform:scale(1) }
+}
+/* A toast leans in from below with a small settle, and its icon pops. */
+.toast .icon {
+  transform-origin:center;
+  animation:toast-icon .4s var(--ease-out)
+}
+@keyframes toast-icon {
+  0% { transform:scale(.6) rotate(-8deg) }
+  60% { transform:scale(1.12) rotate(3deg) }
+  100% { transform:scale(1) rotate(0) }
+}
+/* The checked step in the QA list pops its mark. */
+.qa-check.pass .qa-check-mark {
+  transition:transform .3s var(--ease-out)
+}
+/* The divider grip hints at draggability with a gentle pulse while idle. */
+.req-divider .req-grip {
+  opacity:.5;
+  transition:opacity .2s,color .2s
+}
+.req-divider:hover .req-grip {
+  opacity:1;
+  color:var(--accent)
+}
+/* The browser refresh circle turns on hover, saying "this is a control". */
+.qa-browser-reload:hover .icon {
+  transform:rotate(90deg)
+}
+.qa-browser-reload .icon {
+  transition:transform .3s var(--ease-out)
+}
+/* A code file's language badge warms on hover of the viewer header. */
+.code-viewer-lang {
+  transition:color .2s,border-color .2s
+}
+.code-viewer-head:hover .code-viewer-lang {
+  color:var(--accent);
+  border-color:var(--accent)
+}
+/* Scrollbars, quiet and thin, so long panes read as scrollable without
+   competing with the content. */
+::-webkit-scrollbar {
+  width:9px;
+  height:9px
+}
+::-webkit-scrollbar-thumb {
+  background:var(--control);
+  border:2px solid transparent;
+  background-clip:content-box;
+  border-radius:8px
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color:var(--text-tertiary);
+  background-clip:content-box
+}
+::-webkit-scrollbar-track {
+  background:transparent
+}
+/* Dark theme scrollbars follow the surface. */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background-color:#44444b;
+  background-clip:content-box
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background-color:#5a5a62;
+  background-clip:content-box
+}
+
+/* The demo button pulses while the tour runs, so the user knows the machine
+   is driving and one more click will stop it. The pulse is a soft halo, not a
+   blink. */
+.demo-btn[aria-pressed="true"] {
+  animation:demo-pulse 1.8s var(--ease) infinite
+}
+@keyframes demo-pulse {
+  0%,100% { box-shadow:0 0 0 0 var(--accent-soft) }
+  50% { box-shadow:0 0 0 8px transparent }
+}
+
+/* A disabled action button should read as resting, not broken: it keeps its
+   shape, loses the hover lift, and its label stays legible. */
+.btn:disabled,
+.btn[disabled] {
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none!important;
+  box-shadow:none!important;
+  animation:none!important
+}
+.btn:disabled:hover,
+.btn[disabled]:hover {
+  transform:none;
+  background:var(--surface-elevated)
+}
+.btn-primary:disabled,
+.btn-primary[disabled] {
+  background:var(--control);
+  color:rgba(255,255,255,.75)
+}
+[data-theme="dark"] .btn-primary:disabled,
+[data-theme="dark"] .btn-primary[disabled] {
+  color:#9a9aa2
+}
+/* A disabled control still explains itself on hover, via its title, but the
+   cursor makes the resting state unmistakable. */
+
+/* A download button's arrow steps down as it is approached — the motion says
+   "this will leave the page". */
+.manifest-row .btn:hover .icon,
+.rail-export:hover .icon,
+.hero-actions .btn:hover .icon {
+  transform:translateY(1.5px)
+}
+
+/* ---- 工段一：诊断步骤条（渐进披露） ------------------------------------
+   The four diagnostic steps read as a horizontal flow: each step is a quiet
+   capsule, done steps hold a check, the current step carries the accent, and
+   the whole strip says "this is a sequence, one thing at a time". */
+.diag-steps {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:18px
+}
+.diag-step {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface-elevated);
+  color:var(--text-secondary);
+  text-align:left;
+  min-width:0;
+  transition:border-color .2s var(--ease-out),border-width .2s var(--ease-out),background .2s var(--ease-out),transform .2s var(--ease-out)
+}
+.diag-step:hover {
+  border-color:var(--control);
+  transform:translateY(-1px)
+}
+.diag-step.done {
+  border-color:color-mix(in srgb,var(--success) 35%,var(--border));
+  background:color-mix(in srgb,var(--success-bg) 45%,var(--surface-elevated))
+}
+.diag-step.current {
+  border-color:var(--accent);
+  background:var(--accent-soft)
+}
+.diag-mark {
+  width:24px;
+  height:24px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  border:1.5px solid var(--control);
+  color:var(--text-secondary);
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
+  transition:background .2s,border-color .2s,color .2s
+}
+.diag-mark .icon { width:13px; height:13px; stroke-width:2.4 }
+.diag-step.done .diag-mark {
+  border-color:transparent;
+  background:var(--success);
+  color:#fff
+}
+.diag-step.current .diag-mark {
+  border-color:var(--accent);
+  color:var(--accent)
+}
+.diag-body {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:1px
+}
+.diag-body strong {
+  font-size:13px;
+  font-weight:600;
+  color:var(--text);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.diag-body span {
+  font-size:11px;
+  color:var(--text-secondary);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.diag-go {
+  flex-shrink:0;
+  font-size:11px;
+  color:var(--text-tertiary)
+}
+.diag-step.current .diag-go { color:var(--accent) }
+.diag-step.done .diag-go { color:var(--success) }
+@media(max-width:800px) {
+  .diag-steps {
+    grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+}
+@media(max-width:480px) {
+  .diag-steps {
+    grid-template-columns:minmax(0,1fr)
+  }
+  .diag-step {
+    padding:10px 12px
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "product": "会议室预约系统",
+  "productEn": "Meeting Room Booking",
+  "entities": [
+    {
+      "table": "meeting_room",
+      "fields": [
+        { "name": "name", "type": "text" },
+        { "name": "capacity", "type": "int" },
+        { "name": "location", "type": "text" },
+        { "name": "status", "type": "text" }
+      ]
+    },
+    {
+      "table": "booking",
+      "fields": [
+        { "name": "room_id", "type": "bigint" },
+        { "name": "applicant", "type": "text" },
+        { "name": "start_at", "type": "timestamptz" },
+        { "name": "end_at", "type": "timestamptz" },
+        { "name": "purpose", "type": "text" },
+        { "name": "status", "type": "text" }
+      ]
+    }
+  ],
+  "anchors": [
+    { "id": "calendar.get", "label": "预约日历", "route": "/meeting/calendar", "scope": "meeting:read", "method": "get" },
+    { "id": "booking.create", "label": "新建预约", "route": "/meeting/bookings", "scope": "meeting:create", "method": "post", "entity": "booking" },
+    { "id": "booking.approve", "label": "审批预约", "route": "/meeting/bookings/{id}/approve", "scope": "meeting:approve", "method": "post", "entity": "booking" },
+    { "id": "rooms.list", "label": "会议室列表", "route": "/meeting/rooms", "scope": "meeting:read", "method": "get", "entity": "meeting_room" },
+    { "id": "usage.summary", "label": "使用统计", "route": "/meeting/usage", "scope": "meeting:read", "method": "get", "entity": "booking" },
+    { "id": "approval.timeline", "label": "审批时间线", "route": "/meeting/approvals", "scope": "meeting:read", "method": "get" },
+    { "id": "settings.update", "label": "预约规则", "route": "/meeting/settings", "scope": "meeting:admin", "method": "put", "entity": "meeting_room" }
+  ]
+}

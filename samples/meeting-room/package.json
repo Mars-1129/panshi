@@ -1,0 +1,10 @@
+{
+  "name": "meeting-room-booking",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "会议室预约系统（PanShi 新建项目样例）",
+  "scripts": {
+    "test": "node --test"
+  }
+}

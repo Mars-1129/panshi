@@ -1,0 +1,16 @@
+/* ============================================================================
+   PanShi-SwarmFactory · styles.css v4（单一入口，按层级聚合）
+   ----------------------------------------------------------------------------
+   v4 = v3 全量超集：新增政企软件工厂全链路组件（components-v4.css）。
+   应用只需引入本文件；顺序保证窄屏 media 与布局规则在最后胜出。
+   若构建工具不支持 @import，可按此顺序直接拼接各文件内容。
+   ========================================================================== */
+
+@import url("../tokens/tokens.css");
+@import url("./base.css");
+@import url("./motion.css");
+@import url("./components.css");
+@import url("./components-v2.css");
+@import url("./components-v3.css");
+@import url("./components-v4.css");
+@import url("./layout.css");

@@ -1,0 +1,14 @@
+{
+  "$comment": "黑盒清单：声明仓库里「读不了源码、只能通过输入输出观察行为」的计算模块，以及对应的重写实现。工段 03 会用它们做差分对拍。没有此文件或 targets 为空时，工段 03 标记为「不适用」并从进度分母中排除。",
+  "targets": [
+    {
+      "binary": "lib/libdepreciation.wasm",
+      "symbol": "monthly_depreciation",
+      "implementation": "src/depreciation-core.mjs",
+      "export": "monthlyDepreciation",
+      "args": ["i32", "i32", "i32"],
+      "domains": [[0, 200000000], [0, 20000000], [1, 360]],
+      "note": "固定资产折旧核心算法。原为 C 动态库（.so），源码丢失后以 wasm 形态保留；重写版在 src/depreciation-core.mjs。"
+    }
+  ]
+}

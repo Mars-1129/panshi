@@ -1,0 +1,12 @@
+flowchart TB
+  API[API / SSE / WebSocket] --> Schema[Schema validation]
+  Schema --> Reducer[Event reducer]
+  Reducer --> VM[Task view-models]
+  VM --> Header[TaskHeader]
+  VM --> Timeline[RunTimeline]
+  VM --> Changes[ChangeTree + DiffViewer]
+  VM --> Checks[CheckList]
+  VM --> Delivery[DeliveryReport]
+  UIStore[UI store: theme/tab/panels] --> Header
+  UIStore --> Timeline
+  UIStore --> Changes

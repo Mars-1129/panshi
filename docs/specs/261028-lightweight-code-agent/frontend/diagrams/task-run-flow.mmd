@@ -1,0 +1,16 @@
+flowchart TD
+  A[New task] --> B[Planning]
+  B --> C[Plan ready]
+  C --> D{Approval required?}
+  D -->|yes| E[Awaiting approval]
+  E -->|approve| F[Acting]
+  E -->|reject| G[Revise or cancel]
+  D -->|no| F
+  F --> H[Tool events]
+  H --> I[Patch/checkpoint]
+  I --> J[Verifying]
+  J --> K{Checks pass?}
+  K -->|yes| L[Delivery report]
+  K -->|no| M[Repair budget]
+  M -->|available| F
+  M -->|exhausted| N[Failure evidence]

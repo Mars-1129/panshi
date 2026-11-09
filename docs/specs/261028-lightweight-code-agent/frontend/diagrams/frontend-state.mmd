@@ -1,0 +1,15 @@
+stateDiagram-v2
+  [*] --> draft
+  draft --> planning
+  planning --> awaiting_approval
+  planning --> acting: auto-approved
+  awaiting_approval --> acting: approved
+  awaiting_approval --> draft: revise
+  acting --> verifying
+  acting --> blocked
+  verifying --> succeeded
+  verifying --> failed
+  failed --> acting: repair budget
+  draft --> cancelled
+  planning --> cancelled
+  acting --> cancelled

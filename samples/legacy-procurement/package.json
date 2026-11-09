@@ -1,0 +1,10 @@
+{
+  "name": "legacy-procurement",
+  "version": "0.9.0",
+  "private": true,
+  "type": "module",
+  "description": "旧物资采购与固定资产管理系统（PanShi 样例靶场）",
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "department": "设备管理部",
+  "assets": [
+    { "assetNo": "EQ-2015-001", "name": "数控机床", "originalCents": 120000000, "months": 60, "method": "double_declining" },
+    { "assetNo": "EQ-2016-014", "name": "叉车", "originalCents": 24000000, "months": 48, "method": "straight_line" }
+  ],
+  "approvalThresholdsCents": {
+    "vicePresident": 50000000,
+    "director": 20000000
+  }
+}

@@ -1,0 +1,55 @@
+# ---- 本地配置与密钥（绝不入库）----
+API.txt
+.env
+.env.local
+.env.*.local
+
+# ---- 依赖与构建产物 ----
+**/node_modules/
+**/dist/
+**/dist-legacy/
+**/dist-embed/
+**/*.tsbuildinfo
+**/.playwright-cli/
+**/output/playwright/
+
+# ---- 运行期数据：任务记录、工作区快照、黑盒对拍产物 ----
+runtime-workspace/
+**/.repo-agent/
+**/.repopilot/
+
+# ---- 本地视觉验收截图（不属于交付物）----
+.shots/
+
+# ---- 第三方参考仓库（体积大且有独立许可证，不随本仓库分发）----
+reference-repos/
+
+# ---- 比赛材料（方案文档、PPT 及讲稿，单独提交，不进代码仓库）----
+doc-gai/
+docs/ppt-demo-section.md
+openJiuwen智能体创意大赛模板*.pptx
+*.pptx
+
+# ---- 历史素材与旧版设计系统（v4 才是当前在用的）----
+/ui-kit-v2.zip
+/ui-kit-v3.zip
+/ui-kit-v4.zip
+ui-kit/
+ui-kit-v2/
+ui-kit-v3/
+New-F-UI-Skills/
+New-F-UI-Skills.zip
+PanShi_SwarmFactory_Frontend_AssetPack*/
+
+# ---- 早期原型页面 ----
+/1/
+
+# ---- 比赛方案文档（根目录副本，与 doc-gai/ 同源，不进代码仓库）----
+/MVP实现路径与洋葱圈路线图.md
+/三份方案文档问题汇总与修订建议.md
+/思路.txt
+/技术落地可行性方案.md
+/核心创意亮点与创新性说明文档.md
+/深度需求与应用场景分析文档.md
+
+/ui-kit.zip

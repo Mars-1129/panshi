@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RepoPilot Lite · UI Kit v2 风格指南</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../tokens/tokens.css" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/motion.css" />
+    <link rel="stylesheet" href="../css/components.css" />
+    <link rel="stylesheet" href="../css/components-v2.css" />
+    <link rel="stylesheet" href="../css/layout.css" />
+    <style>
+      /* preview 专属布局，不污染产品组件 */
+      body { padding: 0; }
+      .pv-topbar {
+        position: sticky; top: 0; z-index: var(--rp-z-sticky);
+        display: flex; align-items: center; gap: var(--rp-space-3);
+        padding: var(--rp-space-4) var(--rp-space-7);
+        border-bottom: 1px solid var(--rp-border);
+        background: var(--rp-glass-bg-strong);
+        backdrop-filter: var(--rp-glass-blur);
+        -webkit-backdrop-filter: var(--rp-glass-blur);
+      }
+      .pv-topbar strong { font-size: var(--rp-fs-h3); letter-spacing: -0.02em; }
+      .pv-topbar .spacer { flex: 1; }
+      .pv-wrap { max-width: 1180px; margin: 0 auto; padding: var(--rp-space-8) var(--rp-space-7); display: grid; gap: var(--rp-space-8); }
+      .pv-section { display: grid; gap: var(--rp-space-4); }
+      .pv-section > h2 { font-size: var(--rp-fs-h2); font-weight: var(--rp-weight-semibold); }
+      .pv-note { color: var(--rp-text-muted); font-size: var(--rp-fs-compact); }
+      .pv-row { display: flex; flex-wrap: wrap; gap: var(--rp-space-3); align-items: center; }
+      .pv-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--rp-space-3); }
+      .pv-swatch { border: 1px solid var(--rp-border); border-radius: var(--rp-radius-panel); overflow: hidden; background: var(--rp-surface); }
+      .pv-swatch .chip { height: 64px; }
+      .pv-swatch .meta { padding: var(--rp-space-2) var(--rp-space-3); display: grid; gap: 2px; }
+      .pv-swatch .name { font-family: var(--rp-font-mono); font-size: var(--rp-fs-compact); }
+      .pv-swatch .val { color: var(--rp-text-muted); font-family: var(--rp-font-mono); font-size: var(--rp-fs-meta); }
+      .pv-type { display: grid; gap: var(--rp-space-3); padding: var(--rp-space-5); }
+      .pv-scale { display: grid; grid-template-columns: 90px minmax(0,1fr); gap: var(--rp-space-3); align-items: baseline; }
+      .pv-scale .tag { font-family: var(--rp-font-mono); color: var(--rp-text-muted); font-size: var(--rp-fs-meta); }
+      .pv-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--rp-space-4); }
+      .pv-timeline-demo, .pv-diff-demo { padding: var(--rp-space-5); }
+      .icon { width: 16px; height: 16px; flex: 0 0 16px; }
+      .icon.sm { width: 14px; height: 14px; }
+      /* 玻璃演示舞台：提供有内容的背景，体现玻璃透感（仅 preview）*/
+      .glass-stage {
+        padding: var(--rp-space-6);
+        border-radius: var(--rp-radius-panel);
+        background:
+          radial-gradient(420px circle at 12% 0%, var(--rp-atmos-glow), transparent 60%),
+          linear-gradient(135deg, var(--rp-accent-muted), var(--rp-surface-muted));
+        display: grid; gap: var(--rp-space-3);
+      }
+      .glass-stage .glass-panel { padding: var(--rp-space-4); }
+      @media (max-width: 859px) { .pv-grid2 { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header class="pv-topbar">
+      <strong>RepoPilot Lite · UI Kit v2</strong>
+      <span class="pv-note">有温度的证据工作台 · 玻璃 / 氛围 / 动效 / 反馈</span>
+      <span class="spacer"></span>
+      <button class="button button-secondary" id="toastDemo" type="button">弹一个 Toast</button>
+      <button class="button button-secondary" id="themeToggle" type="button">
+        <svg class="icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <span id="themeLabel">切换深色</span>
+      </button>
+    </header>
+
+    <div class="pv-wrap">
+      <!-- 色彩 -->
+      <section class="pv-section">
+        <h2>色彩 · 表面与主色</h2>
+        <p class="pv-note">组件只消费 var(--rp-*)，色块为真实 token 渲染。</p>
+        <div class="pv-swatches" id="surfaceSwatches"></div>
+      </section>
+
+      <section class="pv-section">
+        <h2>色彩 · 状态色</h2>
+        <div class="pv-swatches" id="stateSwatches"></div>
+      </section>
+
+      <!-- 排版 -->
+      <section class="pv-section">
+        <h2>排版尺度</h2>
+        <div class="panel pv-type">
+          <div class="pv-scale"><span class="tag">--rp-fs-h1</span><span style="font-size:var(--rp-fs-h1);font-weight:600;letter-spacing:-.03em">页面主标题 Heading 01</span></div>
+          <div class="pv-scale"><span class="tag">--rp-fs-h2</span><span style="font-size:var(--rp-fs-h2);font-weight:600">区块二级标题</span></div>
+          <div class="pv-scale"><span class="tag">--rp-fs-h3</span><span style="font-size:var(--rp-fs-h3);font-weight:600">三级标题</span></div>
+          <div class="pv-scale"><span class="tag">--rp-fs-body</span><span style="font-size:var(--rp-fs-body);line-height:1.65">可读正文：Agent 会先给出计划，只有你批准后才会在隔离 worktree 中写入。</span></div>
+          <div class="pv-scale"><span class="tag">--rp-fs-control</span><span style="font-size:var(--rp-fs-control)">控件与上下文文本 13px</span></div>
+          <div class="pv-scale"><span class="tag">--rp-fs-meta</span><span class="eyebrow">Latin eyebrow / metadata</span></div>
+          <div class="pv-scale"><span class="tag">mono</span><code style="font-size:var(--rp-fs-compact)">run_8f3a21 · src/App.tsx:42 · exit=0</code></div>
+        </div>
+      </section>
+
+      <!-- 按钮 -->
+      <section class="pv-section">
+        <h2>按钮层级（hover 抬升 / press 下沉）</h2>
+        <div class="pv-row">
+          <button class="button button-primary" type="button">
+            <svg class="icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            批准并执行
+          </button>
+          <button class="button button-secondary" type="button">次要操作</button>
+          <button class="button button-quiet" type="button">文字按钮</button>
+          <button class="link-button" type="button">链接按钮 →</button>
+          <button class="icon-button" aria-label="设置" type="button">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 11 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 11a1.65 1.65 0 0 0-.33-1.82l-.06.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- 状态徽章 -->
+      <section class="pv-section">
+        <h2>状态徽章（9 态）</h2>
+        <div class="pv-row" id="chipRow"></div>
+      </section>
+
+      <!-- v2 状态带 -->
+      <section class="pv-section">
+        <h2>状态带 StatusBand</h2>
+        <div class="status-band">
+          <span class="band-label">当前</span>
+          <span class="band-state"><span class="status-dot" style="background:var(--rp-warn)"></span>等待审批</span>
+          <span class="band-next">下一步：核对 3 个文件的改动与验证命令，批准后才会执行。</span>
+          <span class="band-cta"><button class="button button-primary" type="button">查看计划</button></span>
+        </div>
+      </section>
+
+      <!-- v2 玻璃面板 -->
+      <section class="pv-section">
+        <h2>玻璃面板（受控单层 + 发丝边）</h2>
+        <div class="glass-stage">
+          <div class="glass-panel">
+            <strong>半透明玻璃面板</strong>
+            <p class="pv-note" style="margin-top:6px">背景内容透过面板可见，配 12px 模糊与发丝边。</p>
+          </div>
+          <div class="glass-panel strong">
+            <strong>强玻璃（高可读）</strong>
+            <p class="pv-note" style="margin-top:6px">需要承载关键文字时使用，对比度更稳。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- v2 两步确认 -->
+      <section class="pv-section">
+        <h2>两步确认（破坏性动作，可点击演示）</h2>
+        <div class="pv-row">
+          <button class="confirm-button" id="confirmBtn" type="button">
+            <svg class="icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            <span id="confirmLabel">删除检查点</span>
+          </button>
+          <span class="pv-note">第一次点击进入 armed，第二次才执行；失焦或 Esc 复位。</span>
+        </div>
+      </section>
+
+      <!-- v2 折叠 / 提示 / 进度 -->
+      <section class="pv-section">
+        <h2>折叠 / 工具提示 / 进度条</h2>
+        <div class="pv-grid2">
+          <details class="disclosure" open>
+            <summary>
+              <svg class="icon sm chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              风险明细（原生 details）
+            </summary>
+            <div class="disclosure-body">
+              检测到 2 项中等风险：验证命令缺失、worktree 含未提交改动。展开项保留键盘语义。
+            </div>
+          </details>
+          <div class="panel section-panel" style="display:grid;gap:12px">
+            <span class="has-tooltip">
+              <button class="button button-secondary" type="button">悬停看工具提示</button>
+              <span class="tooltip-bubble">快捷键 Ctrl/Cmd + K</span>
+            </span>
+            <div class="progress"><div class="progress-bar" style="width:64%"></div></div>
+            <div class="progress indeterminate"><div class="progress-bar"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- v2 骨架 -->
+      <section class="pv-section">
+        <h2>骨架屏（可切换演示）</h2>
+        <button class="button button-secondary" id="skeletonToggle" type="button">切换加载 / 完成</button>
+        <div class="pv-grid2">
+          <div class="skeleton-card" id="skeletonDemo">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line"></div>
+          </div>
+          <div class="panel section-panel" id="loadedDemo" hidden>
+            <strong style="font-size:var(--rp-fs-control)">任务已加载</strong>
+            <p class="pv-note" style="margin-top:6px">数据到达后骨架移除，结构与真实内容对齐，避免布局跳动。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 表单 -->
+      <section class="pv-section">
+        <h2>表单控件</h2>
+        <div class="pv-grid2">
+          <div class="panel section-panel">
+            <label class="field-label" for="pv-in">任务名称</label>
+            <input class="text-input" id="pv-in" placeholder="例如：修复登录接口的 request id 丢失" />
+            <label class="field-label" for="pv-ta">目标和约束</label>
+            <textarea class="text-area" id="pv-ta" rows="3" placeholder="描述验收条件、相关文件、失败日志"></textarea>
+          </div>
+          <div class="panel section-panel">
+            <label class="field-label">校验错误态</label>
+            <input class="text-input has-error" value="ab" aria-invalid="true" />
+            <small class="field-hint is-error">请输入至少 2 个字符。</small>
+            <label class="field-label" style="margin-top:16px">任务模式</label>
+            <div class="mode-grid">
+              <button class="mode-choice is-selected" type="button"><strong>代码生成</strong><small>实现一个明确的功能</small></button>
+              <button class="mode-choice" type="button"><strong>Bug 修复</strong><small>从复现到回归验证</small></button>
+              <button class="mode-choice" type="button"><strong>代码审查</strong><small>只读输出审查发现</small></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 时间线 -->
+      <section class="pv-section">
+        <h2>证据时间线</h2>
+        <section class="panel pv-timeline-demo">
+          <div class="timeline" style="margin-top:0">
+            <div class="timeline-event">
+              <span class="event-marker marker-ok">
+                <svg class="icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </span>
+              <div><div class="event-title-row"><strong>计划已批准</strong></div><p>批准了计划，运行时创建 checkpoint。</p></div>
+              <time>10:24:11</time>
+            </div>
+            <div class="timeline-event">
+              <span class="event-marker marker-accent">
+                <svg class="icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-3 7h5l-3 7"/><path d="M5 14h3M16 14h3"/></svg>
+              </span>
+              <div><div class="event-title-row"><strong>写入文件</strong><span class="event-kind">tool</span></div><p>1 个文件发生变化。</p></div>
+              <time>10:24:38</time>
+            </div>
+            <div class="timeline-event">
+              <span class="event-marker marker-danger">
+                <svg class="icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              </span>
+              <div><div class="event-title-row"><strong>任务失败</strong></div><p>exit=1：单元测试未通过。</p></div>
+              <time>10:25:02</time>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Diff -->
+      <section class="pv-section">
+        <h2>Diff 渲染</h2>
+        <section class="panel diff-panel pv-diff-demo">
+          <div class="diff-code" style="background:var(--rp-surface-muted)">
+            <div class="diff-line diff-header"><span></span><span></span><code>@@ -12,7 +12,8 @@ function handle()</code></div>
+            <div class="diff-line diff-context"><span class="line-number">12</span><span class="line-sign"> </span><code>  const value = input.trim()</code></div>
+            <div class="diff-line diff-remove"><span class="line-number">13</span><span class="line-sign">−</span><code>  return value.toLower()</code></div>
+            <div class="diff-line diff-add"><span></span><span class="line-number">14</span><span class="line-sign">+</span><code>  return value.toLowerCase()</code></div>
+            <div class="diff-line diff-context"><span class="line-number">15</span><span class="line-sign"> </span><code>}</code></div>
+          </div>
+        </section>
+      </section>
+
+      <!-- 空态 -->
+      <section class="pv-section">
+        <h2>空态（含下一步 CTA）</h2>
+        <div class="panel">
+          <div class="empty-state">
+            <span>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            </span>
+            <strong>还没有文件变更</strong>
+            <p>批准计划并完成写入后，这里会显示真实 diff。</p>
+            <div class="empty-actions"><button class="button button-primary" type="button">新建任务</button></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Toast 演示容器 -->
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+    <script>
+      const root = document.documentElement;
+      const btn = document.getElementById("themeToggle");
+      const label = document.getElementById("themeLabel");
+      if (new URLSearchParams(location.search).get("theme") === "dark") {
+        root.dataset.theme = "dark";
+        label.textContent = "切换浅色";
+      }
+      btn.addEventListener("click", () => {
+        const next = root.dataset.theme === "dark" ? "light" : "dark";
+        root.dataset.theme = next;
+        label.textContent = next === "dark" ? "切换浅色" : "切换深色";
+      });
+
+      const surfaces = [
+        ["--rp-bg", "bg"], ["--rp-surface", "surface"], ["--rp-surface-muted", "muted"],
+        ["--rp-surface-raised", "raised"], ["--rp-text", "text"], ["--rp-text-secondary", "secondary"],
+        ["--rp-text-muted", "muted text"], ["--rp-border", "border"], ["--rp-border-strong", "strong border"],
+        ["--rp-accent", "accent"], ["--rp-accent-strong", "accent strong"], ["--rp-focus", "focus"],
+      ];
+      const states = [
+        ["--rp-ok", "ok"], ["--rp-warn", "warn"], ["--rp-danger", "danger"], ["--rp-info", "info"],
+        ["--rp-ok-muted", "ok muted"], ["--rp-warn-muted", "warn muted"],
+        ["--rp-danger-muted", "danger muted"], ["--rp-info-muted", "info muted"],
+      ];
+      function swatch([token, name]) {
+        return `<div class="pv-swatch"><div class="chip" style="background:var(${token})"></div>
+          <div class="meta"><span class="name">${name}</span><span class="val">${token}</span></div></div>`;
+      }
+      document.getElementById("surfaceSwatches").innerHTML = surfaces.map(swatch).join("");
+      document.getElementById("stateSwatches").innerHTML = states.map(swatch).join("");
+
+      const chips = [
+        ["queued", "排队中"], ["planning", "正在规划"], ["awaiting-approval", "等待审批"],
+        ["acting", "执行中"], ["verifying", "验证中"], ["succeeded", "已完成"],
+        ["failed", "失败"], ["cancelled", "已取消"], ["blocked", "已阻塞"],
+      ];
+      document.getElementById("chipRow").innerHTML = chips
+        .map(([c, t]) => `<span class="status-chip status-${c}"><span class="status-dot"></span>${t}</span>`)
+        .join("");
+
+      /* ---- Toast 演示 ---- */
+      const region = document.getElementById("toastRegion");
+      const iconCheck = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';
+      function showToast(kind, title, detail) {
+        const el = document.createElement("div");
+        el.className = `toast toast-${kind}`;
+        el.innerHTML = `${iconCheck}
+          <span class="toast-copy"><strong>${title}</strong><small>${detail}</small></span>
+          <button class="toast-close" aria-label="关闭" type="button">
+            <svg class="icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>`;
+        region.appendChild(el);
+        const remove = () => el.remove();
+        el.querySelector(".toast-close").addEventListener("click", remove);
+        setTimeout(remove, 3200);
+      }
+      document.getElementById("toastDemo").addEventListener("click", () =>
+        showToast("ok", "已保存", "检查点 checkpoint_8f3a 已写入本地。"));
+
+      /* ---- 两步确认演示 ---- */
+      const confirmBtn = document.getElementById("confirmBtn");
+      const confirmLabel = document.getElementById("confirmLabel");
+      let armed = false;
+      function resetArmed() {
+        armed = false;
+        confirmBtn.classList.remove("armed");
+        confirmLabel.textContent = "删除检查点";
+      }
+      confirmBtn.addEventListener("click", () => {
+        if (!armed) {
+          armed = true;
+          confirmBtn.classList.add("armed");
+          confirmLabel.textContent = "确认删除 checkpoint_8f3a？";
+        } else {
+          showToast("danger", "已删除", "检查点已删除（演示）。");
+          resetArmed();
+        }
+      });
+      confirmBtn.addEventListener("blur", () => { if (armed) resetArmed(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && armed) resetArmed(); });
+
+      /* ---- 骨架切换演示 ---- */
+      const skel = document.getElementById("skeletonDemo");
+      const loaded = document.getElementById("loadedDemo");
+      document.getElementById("skeletonToggle").addEventListener("click", () => {
+        const loading = skel.hidden;
+        skel.hidden = !loading;
+        loaded.hidden = loading;
+      });
+    </script>
+  </body>
+</html>

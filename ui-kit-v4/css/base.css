@@ -1,0 +1,177 @@
+/* ============================================================================
+   RepoPilot Lite · Base v2
+   reset / 元素默认 / 焦点 / 滚动条 / 工具类 / reduced-motion
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  min-width: 320px;
+  background: var(--rp-bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--rp-bg);
+  color: var(--rp-text);
+  font-family: var(--rp-font-sans);
+  font-size: var(--rp-fs-control);
+  line-height: var(--rp-leading-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* ---- 焦点：外环 + 柔和内光晕，不被遮挡 ---- */
+:focus-visible {
+  outline: 2px solid var(--rp-focus);
+  outline-offset: 2px;
+  border-radius: var(--rp-radius-control);
+}
+
+:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+code,
+.mono,
+kbd {
+  font-family: var(--rp-font-mono);
+}
+
+::selection {
+  background: var(--rp-accent-muted);
+}
+
+/* ---- 滚动条（细，不抢视觉）---- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rp-border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--rp-radius-pill);
+  background-color: var(--rp-border-strong);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---- 纯工具类 ---- */
+.mono {
+  font-family: var(--rp-font-mono);
+}
+
+.spin {
+  animation: rp-spin 1s linear infinite;
+}
+
+@keyframes rp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.full-button {
+  width: 100%;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  white-space: nowrap;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+/* v2：可交互元素的统一基础反馈（:where 不提升特异性，组件规则可覆盖）*/
+:where(button, a, [role="button"], summary, .task-tab, .file-row):not(:disabled) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* v2：加载中的容器禁止重复点击 */
+.is-busy {
+  pointer-events: none;
+}
+
+/* ---- 尊重 reduced-motion：直接给最终状态 ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

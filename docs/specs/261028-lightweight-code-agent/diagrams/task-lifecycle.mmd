@@ -1,0 +1,17 @@
+stateDiagram-v2
+  [*] --> queued
+  queued --> planning
+  planning --> awaiting_approval: 需要写入
+  planning --> reviewing: 只读任务
+  awaiting_approval --> acting: 批准
+  awaiting_approval --> cancelled: 拒绝/取消
+  acting --> verifying: 补丁完成
+  acting --> failed: 工具失败
+  verifying --> succeeded: 验证通过
+  verifying --> repairing: 验证失败且有预算
+  verifying --> failed: 验证失败且无预算
+  repairing --> acting: 形成新补丁
+  reviewing --> succeeded: 输出审查报告
+  failed --> [*]
+  succeeded --> [*]
+  cancelled --> [*]

@@ -1,0 +1,107 @@
+/* ============================================================================
+   RepoPilot Lite · Motion v2（动效层）
+   ----------------------------------------------------------------------------
+   只动 transform / opacity；表达入场、生成、确认与空间连续性。
+   不让所有卡片漂浮或持续脉冲；持续脉冲仅给“待用户确认”的内容。
+   prefers-reduced-motion 由 base.css 统一压缩到 1ms，直接呈现最终状态。
+   ========================================================================== */
+
+/* ---- 关键帧 ---- */
+@keyframes rp-rise {
+  from { opacity: 0; transform: translateY(var(--rp-motion-rise)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rp-pop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rp-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* 待审批：低频、克制的金色/蓝色呼吸（这里用 accent 边框光晕）*/
+@keyframes rp-attention {
+  0%, 100% { box-shadow: 0 0 0 0 var(--rp-accent-muted); }
+  50% { box-shadow: 0 0 0 5px transparent; }
+}
+
+/* 实时指示点：很轻的光晕，不做连续强脉冲 */
+@keyframes rp-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--rp-accent-muted); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* ---- 入场工具类 ---- */
+.animate-rise {
+  animation: rp-rise var(--rp-duration-slow) var(--rp-ease-out) both;
+}
+
+.animate-fade {
+  animation: rp-fade var(--rp-duration-base) var(--rp-ease-out) both;
+}
+
+.animate-pop {
+  animation: rp-pop var(--rp-duration-base) var(--rp-ease-spring) both;
+}
+
+/* 交错入场：容器加 .stagger，子元素按顺序延迟（覆盖前 8 个）*/
+.stagger > * {
+  animation: rp-rise var(--rp-duration-slow) var(--rp-ease-out) both;
+}
+
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 45ms; }
+.stagger > *:nth-child(3) { animation-delay: 90ms; }
+.stagger > *:nth-child(4) { animation-delay: 135ms; }
+.stagger > *:nth-child(5) { animation-delay: 180ms; }
+.stagger > *:nth-child(6) { animation-delay: 225ms; }
+.stagger > *:nth-child(7) { animation-delay: 270ms; }
+.stagger > *:nth-child(8) { animation-delay: 315ms; }
+
+/* ---- 骨架屏 ---- */
+.skeleton {
+  border-radius: var(--rp-radius-control);
+  background: linear-gradient(
+    90deg,
+    var(--rp-skeleton-base) 25%,
+    var(--rp-skeleton-highlight) 37%,
+    var(--rp-skeleton-base) 63%
+  );
+  background-size: 400% 100%;
+  animation: rp-shimmer 1.4s var(--rp-ease-inout) infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  margin-bottom: var(--rp-space-2);
+}
+
+.skeleton-line:last-child {
+  width: 62%;
+}
+
+.skeleton-circle {
+  border-radius: var(--rp-radius-pill);
+}
+
+/* ---- 待审批 / 实时反馈 ---- */
+.attention {
+  animation: rp-attention 1.8s var(--rp-ease-inout) infinite;
+}
+
+.live-indicator.is-live {
+  animation: rp-live-pulse 2s var(--rp-ease-inout) infinite;
+}
+
+/* 切换 tab 时面板轻微入场（配合 JS 在 tabpanel 上加 .tab-enter）*/
+.tab-enter {
+  animation: rp-fade var(--rp-duration-base) var(--rp-ease-out) both;
+}

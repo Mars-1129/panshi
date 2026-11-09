@@ -1,0 +1,275 @@
+/* ============================================================================
+   RepoPilot Lite · Design Tokens v2（增强版 / Single Source of Truth）
+   ----------------------------------------------------------------------------
+   v2 = v1 全量超集：保留蓝紫身份与无衬线，新增玻璃材质、氛围层、动效、
+   骨架、控件高度、Toast/两步确认等 token，提升友好度、设计感与交互感。
+   规则不变：
+   1. 组件与页面只消费 var(--rp-*)，禁止裸 hex、禁止自定义阴影/圆角。
+   2. 浅色优先：:root 为浅色，[data-theme="dark"] 为深色（挂在 <html>）。
+   3. 蓝色只表达主动作 / 选中 / 焦点 / 链接；状态用独立低饱和色，不只靠颜色。
+   4. 不使用装饰性衬线、霓虹、玻璃堆叠；玻璃与氛围仅做低强度背景层。
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ---- 字体族（字体文件由 index.html 引入，离线时自动回退系统字体）---- */
+  --rp-font-sans: "IBM Plex Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --rp-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "Cascadia Code", Menlo, Consolas,
+    "Liberation Mono", "Microsoft YaHei UI", "Microsoft YaHei";
+
+  /* ---- 字号尺度 ---- */
+  --rp-fs-meta: 10px;
+  --rp-fs-compact: 11px;
+  --rp-fs-ui: 12px;
+  --rp-fs-control: 13px;
+  --rp-fs-body: 14px;
+  --rp-fs-h3: 16px;
+  --rp-fs-h2: 20px;
+  --rp-fs-h1: clamp(24px, 3vw, 32px);
+  --rp-fs-metric: 24px;
+
+  /* ---- 行高 ---- */
+  --rp-leading-tight: 1.15;
+  --rp-leading-snug: 1.4;
+  --rp-leading-normal: 1.55;
+  --rp-leading-relaxed: 1.65;
+
+  /* ---- 字重 ---- */
+  --rp-weight-regular: 400;
+  --rp-weight-medium: 500;
+  --rp-weight-semibold: 600;
+
+  /* ---- 间距尺度：4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 ---- */
+  --rp-space-1: 4px;
+  --rp-space-2: 8px;
+  --rp-space-3: 12px;
+  --rp-space-4: 16px;
+  --rp-space-5: 20px;
+  --rp-space-6: 24px;
+  --rp-space-7: 32px;
+  --rp-space-8: 40px;
+
+  /* ---- 圆角（严格四档）---- */
+  --rp-radius-control: 6px;
+  --rp-radius-panel: 10px;
+  --rp-radius-sheet: 14px;
+  --rp-radius-pill: 999px;
+
+  /* ---- 布局尺寸 ---- */
+  --rp-rail-width: 248px;
+  --rp-evidence-width: 300px;
+  --rp-bar-height: 56px;
+  --rp-page-max: 1440px;
+
+  /* ---- 层级 z-index ---- */
+  --rp-z-base: 0;
+  --rp-z-sticky: 10;
+  --rp-z-dropdown: 15;
+  --rp-z-overlay: 20;
+  --rp-z-modal: 30;
+  --rp-z-toast: 40;
+
+  /* ---- 动效（v1 + v2 增强）---- */
+  --rp-duration-fast: 120ms;
+  --rp-duration-base: 160ms;
+  --rp-duration-slow: 240ms;
+  --rp-duration-slower: 400ms;
+  --rp-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --rp-ease-inout: ease-in-out;
+  --rp-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --rp-ease-spring: cubic-bezier(0.34, 1.25, 0.64, 1);
+  --rp-motion-rise: 12px;
+  --rp-press-scale: 0.97;
+  --rp-hover-lift: -2px;
+
+  /* ---- 阴影 ---- */
+  --rp-shadow-sm: 0 1px 2px rgba(17, 25, 31, 0.06);
+  --rp-shadow-md: 0 8px 24px rgba(17, 25, 31, 0.1);
+  --rp-shadow-lg: 0 24px 60px rgba(17, 25, 31, 0.16);
+  --rp-overlay-bg: rgba(15, 20, 24, 0.45);
+
+  /* ---- 语义色：表面与文字（浅色）---- */
+  --rp-bg: #f4f5f2;
+  --rp-surface: #ffffff;
+  --rp-surface-muted: #ecefea;
+  --rp-surface-raised: #ffffff;
+  --rp-text: #172027;
+  --rp-text-secondary: #52606a;
+  --rp-text-muted: #78848b;
+
+  /* ---- 语义色：边框 ---- */
+  --rp-border: #d7ddd9;
+  --rp-border-strong: #aeb8b3;
+
+  /* ---- 语义色：主色（蓝）---- */
+  --rp-accent: #4f6fe8;
+  --rp-accent-strong: #3655c7;
+  --rp-accent-ink: #ffffff;
+  --rp-accent-muted: rgba(79, 111, 232, 0.1);
+  --rp-focus: #2b65d9;
+
+  /* ---- 语义色：状态（低饱和）+ 柔和背景 ---- */
+  --rp-ok: #2f8a67;
+  --rp-warn: #b87921;
+  --rp-danger: #c95656;
+  --rp-info: #467b9f;
+  --rp-ok-muted: rgba(47, 138, 103, 0.1);
+  --rp-warn-muted: rgba(184, 121, 33, 0.1);
+  --rp-danger-muted: rgba(201, 86, 86, 0.1);
+  --rp-info-muted: rgba(70, 123, 159, 0.1);
+
+  /* ========================================================================
+     v2 新增
+     ====================================================================== */
+
+  /* 控件高度档与触控目标 */
+  --rp-control-sm: 32px;
+  --rp-control-md: 38px;
+  --rp-control-lg: 44px;
+  --rp-touch-target: 44px;
+
+  /* 悬停/选中的柔和覆盖（半透明，不引入新实色）*/
+  --rp-surface-hover: rgba(17, 25, 31, 0.04);
+  --rp-surface-selected: rgba(79, 111, 232, 0.08);
+
+  /* 玻璃材质：半透明表面 + 背景模糊 + 发丝高光边 */
+  --rp-glass-bg: rgba(255, 255, 255, 0.72);
+  --rp-glass-bg-strong: rgba(255, 255, 255, 0.92);
+  --rp-glass-blur: blur(12px) saturate(1.5);
+  --rp-hairline: rgba(17, 25, 31, 0.08);
+
+  /* 氛围层（极低强度，仅背景，不压内容）*/
+  --rp-atmos-grid: rgba(79, 111, 232, 0.05);
+  --rp-atmos-glow: rgba(79, 111, 232, 0.12);
+  --rp-atmos-vignette: rgba(15, 20, 24, 0.05);
+
+  /* 骨架屏 shimmer */
+  --rp-skeleton-base: rgba(17, 25, 31, 0.06);
+  --rp-skeleton-highlight: rgba(255, 255, 255, 0.6);
+
+  /* Toast（玻璃强背景）*/
+  --rp-toast-bg: var(--rp-glass-bg-strong);
+
+  /* ========================================================================
+     v3 新增：对话式编码协作者（chat-first）
+     只新增对话布局/气泡/内联卡片特有的 token，其余全部引用现有语义变量，
+     明暗自动跟随，不引入平行视觉系统。
+     ====================================================================== */
+
+  /* 对话工作台布局 */
+  --rp-chat-max: 780px;          /* 统一对话流最大阅读宽度 */
+  --rp-product-width: 360px;     /* 右侧产物/预览侧栏宽度 */
+  --rp-composer-height: 52px;    /* 常驻 composer 高度 */
+  --rp-topbar-height: 52px;
+
+  /* 消息气泡 */
+  --rp-bubble-user-bg: var(--rp-accent);
+  --rp-bubble-user-ink: var(--rp-accent-ink);
+  --rp-bubble-agent-bg: var(--rp-surface-muted);
+  --rp-bubble-agent-ink: var(--rp-text);
+
+  /* 对话内联卡片（计划/审批/活动/检查）*/
+  --rp-inline-card-bg: var(--rp-surface);
+  --rp-inline-card-border: var(--rp-border);
+  --rp-inline-card-rail: 3px;    /* 卡片左侧状态条宽度 */
+  --rp-activity-bg: var(--rp-surface-muted);
+  --rp-activity-hover: var(--rp-surface-hover);
+
+  /* 常驻 composer */
+  --rp-composer-bg: var(--rp-surface);
+  --rp-composer-border: var(--rp-border-strong);
+
+  /* 对话头像 */
+  --rp-avatar-bg: var(--rp-accent-muted);
+  --rp-avatar-ink: var(--rp-accent);
+
+  /* ========================================================================
+     v4 新增：PanShi-SwarmFactory 政企软件工厂（全链路 9 工段 / 多角色 / 护栏）
+     只新增工厂布局与业务组件特有的 token，其余全部引用现有语义变量，
+     明暗自动跟随，不引入平行视觉系统。
+     ====================================================================== */
+
+  /* 工厂布局 */
+  --rp-factory-topbar: 52px;
+  --rp-stage-rail-width: 264px;     /* 工段导航宽度 */
+  --rp-stage-dot: 26px;             /* 工段 stepper 圆点 */
+  --rp-stage-track: var(--rp-border);
+  --rp-role-card-min: 240px;        /* 角色卡最小宽度 */
+
+  /* 业务系统（采购/审批/库存/预算）表面 */
+  --rp-table-stripe: var(--rp-surface-muted);
+  --rp-dashboard-card-bg: var(--rp-surface);
+  --rp-metric-ink: var(--rp-text);
+
+  /* 契约与锁定 */
+  --rp-lock-bg: var(--rp-warn-muted);
+  --rp-hash-ink: var(--rp-text-muted);
+
+  /* 攻防阵营：红军=危险色，蓝军=信息色，裁判=主色 */
+  --rp-redteam: var(--rp-danger);
+  --rp-blueteam: var(--rp-info);
+  --rp-judge: var(--rp-accent);
+
+  /* 预算 / 进度轨道 */
+  --rp-budget-track: var(--rp-surface-muted);
+  --rp-budget-fill: var(--rp-accent);
+
+  /* 开发态锚点高亮（data-panshi-id 调试，仅开发模式显示）*/
+  --rp-anchor-ring: var(--rp-focus);
+  --rp-anchor-flag-bg: var(--rp-accent-muted);
+}
+
+/* ============================================================================
+   深色主题
+   ========================================================================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --rp-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --rp-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --rp-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --rp-overlay-bg: rgba(4, 7, 9, 0.6);
+
+  --rp-bg: #101315;
+  --rp-surface: #171b1e;
+  --rp-surface-muted: #202629;
+  --rp-surface-raised: #242b2f;
+  --rp-text: #edf1ee;
+  --rp-text-secondary: #b5c0c1;
+  --rp-text-muted: #839093;
+
+  --rp-border: #303a3e;
+  --rp-border-strong: #526166;
+
+  --rp-accent: #87a0ff;
+  --rp-accent-strong: #a5b7ff;
+  --rp-accent-ink: #11151a;
+  --rp-accent-muted: rgba(135, 160, 255, 0.14);
+  --rp-focus: #9eb5ff;
+
+  --rp-ok: #6ac19d;
+  --rp-warn: #e3ae5b;
+  --rp-danger: #ef8585;
+  --rp-info: #87b3d0;
+  --rp-ok-muted: rgba(106, 193, 157, 0.14);
+  --rp-warn-muted: rgba(227, 174, 91, 0.14);
+  --rp-danger-muted: rgba(239, 133, 133, 0.14);
+  --rp-info-muted: rgba(135, 172, 208, 0.14);
+
+  /* ---- v2 新增（深色）---- */
+  --rp-surface-hover: rgba(255, 255, 255, 0.05);
+  --rp-surface-selected: rgba(135, 160, 255, 0.12);
+
+  --rp-glass-bg: rgba(23, 27, 30, 0.7);
+  --rp-glass-bg-strong: rgba(28, 33, 37, 0.92);
+  --rp-hairline: rgba(255, 255, 255, 0.08);
+
+  --rp-atmos-grid: rgba(135, 160, 255, 0.05);
+  --rp-atmos-glow: rgba(135, 160, 255, 0.12);
+  --rp-atmos-vignette: rgba(0, 0, 0, 0.35);
+
+  --rp-skeleton-base: rgba(255, 255, 255, 0.06);
+  --rp-skeleton-highlight: rgba(255, 255, 255, 0.1);
+}

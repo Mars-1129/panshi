@@ -1,0 +1,15 @@
+{
+  "name": "repopilot-lite",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --dir apps/code-agent dev",
+    "build": "pnpm --dir apps/code-agent build",
+    "typecheck": "pnpm --dir apps/code-agent typecheck",
+    "test": "pnpm --dir apps/code-agent test",
+    "server": "node apps/code-agent/server/main.ts",
+    "cli": "node apps/code-agent/cli/index.ts",
+    "run": "node apps/code-agent/cli/index.ts run"
+  }
+}

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="采购审批系统原型 · 独立查看页。">
+  <title>采购审批原型 · 磐石智造</title>
+  <link rel="stylesheet" href="styles-final.css">
+  <script>document.documentElement.classList.add('js')</script>
+  <style>
+    /* The prototype gets a page of its own, because it is a thing to look at
+       rather than a thing to glance at. The chrome around it is quiet on
+       purpose: the prototype is the content, and the page is the frame. */
+    body {
+      background:var(--bg);
+      min-height:100dvh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden
+    }
+    .proto-bar {
+      display:flex;
+      align-items:center;
+      gap:16px;
+      padding:0 20px;
+      height:64px;
+      flex-shrink:0;
+      background:var(--surface);
+      border-bottom:1px solid var(--border)
+    }
+    .proto-back {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:13px;
+      color:var(--text);
+      text-decoration:none;
+      white-space:nowrap;
+      padding:6px 10px 6px 6px;
+      margin-left:-6px;
+      border-radius:7px;
+      transition:background .18s
+    }
+    .proto-back:hover {
+      background:var(--raised);
+      text-decoration:none
+    }
+    /* The name of the thing being looked at. It is the page's heading, so it
+       is the largest text on the page and the first thing read. */
+    .proto-heading {
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-width:0
+    }
+    .proto-title {
+      font-size:19px;
+      font-weight:600;
+      letter-spacing:-.3px;
+      line-height:1.25;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis
+    }
+    .proto-sub {
+      font-size:13px;
+      color:var(--text-secondary);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-width:0
+    }
+    .proto-bar-spacer {
+      flex:1;
+      min-width:0
+    }
+    .proto-stage {
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      padding:24px;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start
+    }
+    .proto-frame {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      width:100%;
+      max-width:1280px;
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      min-height:0
+    }
+    .proto-frame-chrome {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-bottom:1px solid var(--border);
+      flex-shrink:0
+    }
+    .proto-dot {
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--control);
+      flex-shrink:0
+    }
+    .proto-url {
+      margin-left:8px;
+      font-size:12px;
+      color:var(--text-secondary);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap
+    }
+    .proto-frame iframe {
+      flex:1;
+      width:100%;
+      border:0;
+      background:white;
+      min-height:0
+    }
+    /* The size of the frame is the size of the thing being reviewed. */
+    .proto-stage[data-device="tablet"] .proto-frame {
+      max-width:834px
+    }
+    .proto-stage[data-device="phone"] .proto-frame {
+      max-width:390px;
+      border-radius:20px
+    }
+    @media(max-width:760px) {
+      .proto-stage {
+        padding:12px
+      }
+      .proto-sub {
+        display:none
+      }
+      .proto-title {
+        font-size:17px
+      }
+      /* The bar has more in it than a phone's width allows, so it gives up
+         the things that can be found elsewhere: the subtitle, the spacer and
+         the "open in a new tab" button, which the phone's own browser
+         affordance already covers. The heading keeps its room, because the
+         heading is what says what this page is. */
+      .proto-bar {
+        gap:8px;
+        height:auto;
+        padding:10px 14px;
+        flex-wrap:wrap
+      }
+      .proto-bar-spacer {
+        display:none
+      }
+      .proto-bar > .btn {
+        display:none
+      }
+      .proto-heading {
+        flex:1 1 100%
+      }
+      /* The switch goes on its own line on a phone, where a bar of five
+         things cannot fit across the width. */
+      .proto-bar .seg-control {
+        width:100%
+      }
+      .proto-bar .seg-control button {
+        flex:1;
+        justify-content:center
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="proto-bar">
+    <a class="proto-back" href="index-final.html">‹ 返回工作台</a>
+    <div class="proto-heading">
+      <h1 class="proto-title">采购审批系统原型</h1>
+      <span class="proto-sub">原始业务原型 · 可直接点击操作</span>
+    </div>
+    <span class="proto-bar-spacer"></span>
+    <div class="seg-control device-switch" role="tablist" aria-label="预览设备尺寸" id="deviceSwitch">
+      <span class="seg-indicator" aria-hidden="true"></span>
+      <button type="button" role="tab" data-device="desktop" aria-selected="true" aria-label="桌面预览">桌面</button>
+      <button type="button" role="tab" data-device="tablet" aria-selected="false" aria-label="平板预览">平板</button>
+      <button type="button" role="tab" data-device="phone" aria-selected="false" aria-label="手机预览">手机</button>
+    </div>
+    <a class="btn btn-secondary" href="prototype-demo.html" target="_blank" rel="noopener">在新标签页打开</a>
+  </header>
+  <div class="proto-stage" id="protoStage" data-device="desktop">
+    <div class="proto-frame">
+      <div class="proto-frame-chrome">
+        <span class="proto-dot"></span><span class="proto-dot"></span><span class="proto-dot"></span>
+        <span class="proto-url">procurement / 采购审批</span>
+      </div>
+      <iframe title="采购审批系统原型" src="prototype-demo.html"></iframe>
+    </div>
+  </div>
+  <script>
+    (function(){
+      'use strict';
+      var stage=document.getElementById('protoStage');
+      var track=document.getElementById('deviceSwitch');
+      var cap=track.querySelector('.seg-indicator');
+      var buttons=[].slice.call(track.querySelectorAll('[data-device]'));
+      function place(){
+        var active=track.querySelector('[aria-selected="true"]');
+        if(!active||!cap)return;
+        var o=track.getBoundingClientRect(),r=active.getBoundingClientRect();
+        cap.style.transform='translateX('+(r.left-o.left)+'px)';
+        cap.style.width=r.width+'px';
+        cap.style.opacity='1';
+      }
+      track.addEventListener('click',function(e){
+        var b=e.target.closest('[data-device]');
+        if(!b)return;
+        buttons.forEach(function(x){x.setAttribute('aria-selected',String(x===b));});
+        stage.dataset.device=b.dataset.device;
+        place();
+      });
+      window.addEventListener('resize',place);
+      place();
+      requestAnimationFrame(place);
+    })();
+  </script>
+</body>
+</html>

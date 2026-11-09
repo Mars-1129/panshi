@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PanShi-SwarmFactory · UI Kit v4 工厂组件演示</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  /* preview 专属，不进入产品 */
+  body { padding: 0; }
+  .pv-bar { position: sticky; top: 0; z-index: var(--rp-z-sticky); display: flex; align-items: center; gap: var(--rp-space-3);
+    padding: var(--rp-space-3) var(--rp-space-5); border-bottom: 1px solid var(--rp-border);
+    background: var(--rp-glass-bg-strong); backdrop-filter: var(--rp-glass-blur); -webkit-backdrop-filter: var(--rp-glass-blur); }
+  .pv-bar strong { font-size: var(--rp-fs-h3); }
+  .pv-bar .spacer { flex: 1; }
+  .pv-jump { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pv-jump a { font-size: var(--rp-fs-compact); color: var(--rp-text-secondary); text-decoration: none; padding: 4px 8px; border-radius: var(--rp-radius-control); }
+  .pv-jump a:hover { background: var(--rp-surface-hover); color: var(--rp-text); }
+  .pv-wrap { max-width: 1280px; margin: 0 auto; padding: var(--rp-space-6) var(--rp-space-5); display: grid; gap: var(--rp-space-7); }
+  .pv-section { display: grid; gap: var(--rp-space-3); scroll-margin-top: 72px; }
+  .pv-section > h2 { font-size: var(--rp-fs-h2); font-weight: var(--rp-weight-semibold); margin: 0; }
+  .pv-note { color: var(--rp-text-muted); font-size: var(--rp-fs-compact); margin: 0; }
+  .pv-box { border: 1px solid var(--rp-border); border-radius: var(--rp-radius-panel); padding: var(--rp-space-4); background: var(--rp-surface); }
+  .pv-row { display: flex; flex-wrap: wrap; gap: var(--rp-space-3); align-items: center; }
+  .pv-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--rp-space-4); }
+  .ico { width: 16px; height: 16px; display: inline-grid; place-items: center; }
+  .pv-shell-stage { border: 1px solid var(--rp-border); border-radius: var(--rp-radius-panel); overflow: hidden; }
+  .pv-shell-stage .factory-shell { position: static; border: 0; height: auto; min-height: 620px; }
+  @media (max-width: 860px) { .pv-grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="pv-bar">
+  <strong>磐石蜂群工厂 · v4 组件演示</strong>
+  <nav class="pv-jump" aria-label="组件分区">
+    <a href="#s-shell">驾驶舱</a><a href="#s-biz">业务锚点</a><a href="#s-contract">契约</a>
+    <a href="#s-rail">护栏</a><a href="#s-adv">攻防</a><a href="#s-cruise">巡航</a>
+    <a href="#s-deliver">交付/RSI</a><a href="#s-fine">细粒度</a><a href="#s-state">状态</a>
+  </nav>
+  <span class="spacer"></span>
+  <button class="icon-button" id="themeBtn" type="button" aria-label="切换明暗主题">◐</button>
+</div>
+
+<div class="pv-wrap">
+
+  <!-- 1. 完整驾驶舱 -->
+  <section class="pv-section" id="s-shell">
+    <h2>1. 工厂驾驶舱（真实外壳 + 工段导航 + 角色）</h2>
+    <p class="pv-note">.factory-shell / .stage-rail（Stage 0–9 多态）/ .role-grid / .stage-io</p>
+    <div class="pv-shell-stage">
+      <div class="factory-shell">
+        <header class="factory-topbar">
+          <div class="factory-brand"><span class="brand-mark">磐</span>磐石蜂群工厂</div>
+          <div class="factory-meta"><span class="mono">projectId:demo-001</span><span class="mono">runId:r-7f3a</span></div>
+          <div class="factory-actions"><button class="icon-button" type="button" aria-label="通知">🔔</button></div>
+        </header>
+        <div class="factory-body">
+          <nav class="stage-rail">
+            <div class="rail-title">工厂工段</div>
+            <button class="stage-item stage-done" type="button"><span class="stage-dot">✓</span><span class="stage-copy"><span class="stage-name">接入基线</span><span class="stage-sub">Stage 0</span></span></button>
+            <button class="stage-item stage-done" type="button"><span class="stage-dot">✓</span><span class="stage-copy"><span class="stage-name">环境救活</span><span class="stage-sub">Stage 1</span></span></button>
+            <button class="stage-item stage-done" type="button"><span class="stage-dot">✓</span><span class="stage-copy"><span class="stage-name">业务考古</span><span class="stage-sub">Stage 2</span></span></button>
+            <button class="stage-item stage-active is-selected" type="button"><span class="stage-dot">◌</span><span class="stage-copy"><span class="stage-name">多角色制造</span><span class="stage-sub">Stage 6</span></span></button>
+            <button class="stage-item stage-blocked" type="button"><span class="stage-dot">!</span><span class="stage-copy"><span class="stage-name">护栏</span><span class="stage-sub">Stage 7</span></span></button>
+            <button class="stage-item" type="button"><span class="stage-dot">8</span><span class="stage-copy"><span class="stage-name">双擎质检</span><span class="stage-sub">Stage 8</span></span></button>
+            <button class="stage-item" type="button"><span class="stage-dot">9</span><span class="stage-copy"><span class="stage-name">RSI 交付</span><span class="stage-sub">Stage 9</span></span></button>
+            <div class="stage-progress"><div class="progress-track"><div class="progress-fill" style="width:62%"></div></div><div class="progress-label">整体进度 62%</div></div>
+          </nav>
+          <main class="stage-view">
+            <div class="stage-container">
+              <div class="stage-header">
+                <div class="stage-title">多角色制造</div>
+                <span class="stage-badge">执行中</span>
+                <div class="stage-exit"><strong>退出条件：</strong>DB/Backend/Frontend 3 角色真实并发完成并通过契约校验。</div>
+              </div>
+              <div class="role-grid">
+                <div class="role-card role-running">
+                  <div class="role-head"><span class="role-avatar">DB</span><span class="role-name">数据库工程师</span><span class="role-status">并发执行中</span></div>
+                  <div class="role-budget"><div class="budget-track"><div class="budget-fill" style="width:48%"></div></div><span class="budget-text">预算 48%</span></div>
+                  <div class="role-concurrency">真实并发 · 组 1</div>
+                </div>
+                <div class="role-card role-running">
+                  <div class="role-head"><span class="role-avatar">BE</span><span class="role-name">后端工程师</span><span class="role-status">并发执行中</span></div>
+                  <div class="role-budget"><div class="budget-track"><div class="budget-fill" style="width:35%"></div></div><span class="budget-text">预算 35%</span></div>
+                  <div class="role-concurrency">真实并发 · 组 1</div>
+                </div>
+                <div class="role-card role-blocked">
+                  <div class="role-head"><span class="role-avatar">FE</span><span class="role-name">前端工程师</span><span class="role-status">阻断</span></div>
+                  <div class="role-meta">等待契约锁定确认</div>
+                </div>
+              </div>
+              <div class="stage-io">
+                <div class="io-col"><div class="io-head">输入产物</div>
+                  <ul class="io-list">
+                    <li class="io-item"><span class="io-name">schema.sql</span><span class="io-hash mono">sha256:9f3a…</span><span class="io-state">locked</span></li>
+                    <li class="io-item"><span class="io-name">openapi.yaml</span><span class="io-hash mono">sha256:1c0e…</span><span class="io-state">locked</span></li>
+                  </ul>
+                </div>
+                <div class="io-col"><div class="io-head">输出产物</div>
+                  <ul class="io-list">
+                    <li class="io-item"><span class="io-name">migration.sql</span><span class="io-hash mono">sha256:77b2…</span><span class="io-state">output</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 业务 7 锚点 -->
+  <section class="pv-section" id="s-biz">
+    <h2>2. 业务系统原型（7 锚点 · data-panshi-id）</h2>
+    <p class="pv-note">锚点 id 与 component_tree.json 一致；路由/字段来自 OpenAPI，写操作带 RBAC</p>
+    <div class="biz-shell" data-anchors="dev">
+      <div class="biz-topbar"><strong>省属国企信创采购系统</strong><span class="anchor-flag">原型锚点</span></div>
+      <div class="biz-body">
+        <nav class="biz-nav">
+          <button class="nav-item" type="button">采购表格</button>
+          <button class="nav-item" type="button">新建采购</button>
+          <button class="nav-item" type="button">发票核验</button>
+          <button class="nav-item" type="button">提交</button>
+          <button class="nav-item" type="button">审批</button>
+          <button class="nav-item" type="button">库存</button>
+          <button class="nav-item" type="button">预算</button>
+        </nav>
+        <div class="biz-page">
+          <div class="biz-page-head">采购单列表 <span class="anchor-flag mono">procurement.table</span></div>
+          <table class="procurement-table" data-panshi-id="procurement.table">
+            <thead><tr><th>采购单号</th><th>物资</th><th>金额</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td>PO-2026-001</td><td>服务器</td><td>128,000</td><td><span class="row-state state-approved">已批准</span></td></tr>
+              <tr><td>PO-2026-002</td><td>交换机</td><td>36,500</td><td><span class="row-state state-pending">待审批</span></td></tr>
+              <tr><td>PO-2026-003</td><td>耗材</td><td>4,200</td><td><span class="row-state state-rejected">已驳回</span></td></tr>
+            </tbody>
+          </table>
+
+          <div class="pv-grid2" style="margin-top:16px">
+            <div class="procurement-form" data-panshi-id="procurement.create">
+              <div class="field"><label class="field-label">物资名称</label><input class="field-input" type="text" placeholder="来自 OpenAPI 字段" /></div>
+              <div class="field"><label class="field-label">金额</label><input class="field-input" type="text" /></div>
+            </div>
+            <div class="invoice-verify" data-panshi-id="procurement.invoice_verify">
+              <button class="verify-button" type="button">核验发票（MCP）</button>
+              <div class="verify-result">等待核验结果</div>
+            </div>
+          </div>
+
+          <div class="pv-grid2" style="margin-top:16px">
+            <div class="approval-timeline" data-panshi-id="approval.timeline">
+              <div class="tl-item"><span class="tl-dot"></span><div class="tl-copy"><strong>发起申请</strong><small>09:12</small></div></div>
+              <div class="tl-item"><span class="tl-dot"></span><div class="tl-copy"><strong>部门审批</strong><small>10:30</small></div></div>
+            </div>
+            <div>
+              <div class="inventory-summary" data-panshi-id="inventory.summary">
+                <div class="inv-metric"><strong>1,284</strong><span>在库项</span></div>
+                <div class="inv-metric is-low"><strong>6</strong><span>低库存预警</span></div>
+              </div>
+              <div class="budget-dashboard" data-panshi-id="budget.dashboard" style="margin-top:12px">
+                <div class="budget-card"><div class="budget-row"><span>年度预算</span><strong>¥ 8,000,000</strong></div>
+                  <div class="budget-bar"><div class="budget-fill" style="width:54%"></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="procurement-submit" data-panshi-id="procurement.submit" style="margin-top:12px">
+            <button class="button-primary" type="button">提交审批（RBAC 写操作）</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 契约 -->
+  <section class="pv-section" id="s-contract">
+    <h2>3. 契约审查与锁定</h2>
+    <div class="contract-review is-locked">
+      <div class="contract-tabs">
+        <button class="ct-tab is-active" type="button">schema.sql</button>
+        <button class="ct-tab" type="button">openapi.yaml</button>
+        <button class="ct-tab" type="button">component_tree.json</button>
+      </div>
+      <div class="contract-panel">
+        <div class="contract-meta"><span class="contract-version">v3</span><span class="contract-lock">已锁定</span></div>
+        <div class="hash-line mono">sha256:9f3a2b7c…d4</div>
+        <div class="lock-banner">契约已锁定，变更需新建版本，不能直接修改 locked。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 护栏 -->
+  <section class="pv-section" id="s-rail">
+    <h2>4. 护栏阻断证据</h2>
+    <div class="rail-list">
+      <div class="rail-violation">
+        <div class="rv-head"><span class="rv-name">PermissionInterruptRail</span><span class="rv-sev">阻断</span></div>
+        <dl class="rv-body"><dt>role</dt><dd>Frontend Builder</dd><dt>expected</dt><dd>RBAC.allow</dd><dt>actual</dt><dd>role=guest</dd><dt>contractHash</dt><dd class="mono">sha256:9f3a…</dd></dl>
+        <div class="rv-recovery">恢复建议：等待审批授权后重试。</div>
+      </div>
+      <div class="rail-violation">
+        <div class="rv-head"><span class="rv-name">BudgetRail</span><span class="rv-sev">阻断</span></div>
+        <dl class="rv-body"><dt>expected</dt><dd>used ≤ limit</dd><dt>actual</dt><dd>104%</dd></dl>
+        <div class="rv-recovery">恢复建议：超预算角色暂停，提交预算审批。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 攻防 -->
+  <section class="pv-section" id="s-adv">
+    <h2>5. 红蓝攻防三列</h2>
+    <div class="adversarial-board">
+      <div class="attack-panel"><div class="panel-head">红军 · 攻击</div><div class="panel-body">
+        <div class="finding-card"><span class="fc-sev sev-critical">严重</span><div class="fc-title">越权访问其他单位数据</div></div>
+        <div class="finding-card"><span class="fc-sev sev-high">高</span><div class="fc-title">未校验发票金额</div></div>
+        <div class="finding-card is-resolved"><span class="fc-sev">已修复</span><div class="fc-title">输入长度校验</div></div>
+      </div></div>
+      <div class="judge-panel"><div class="panel-head">裁判 · 不变量</div><div class="panel-body">
+        <span>预算不超支</span><span>契约哈希一致</span><span>RBAC 全程生效</span>
+      </div></div>
+      <div class="repair-panel"><div class="panel-head">蓝军 · 修复</div><div class="panel-body">
+        <span>修复任务 2 项 · 并发 1</span>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 6. 巡航 -->
+  <section class="pv-section" id="s-cruise">
+    <h2>6. 浏览器巡航与自愈链</h2>
+    <div class="cruise-view">
+      <div class="cruise-steps">
+        <div class="cruise-step is-done">关键路径：打开采购列表</div>
+        <div class="cruise-step is-running">关键路径：提交审批</div>
+        <div class="cruise-step is-failed">关键路径：发票核验</div>
+      </div>
+      <div class="cruise-errors">
+        <div class="cruise-error"><strong>procurement.invoice_verify</strong><p>核验按钮无响应</p></div>
+      </div>
+    </div>
+    <div class="self-heal">
+      <div class="heal-chain">
+        <div class="heal-node">锚点</div><span class="heal-arrow">→</span>
+        <div class="heal-node">源文件</div><span class="heal-arrow">→</span>
+        <div class="heal-node">修复</div><span class="heal-arrow">→</span>
+        <div class="heal-node">重跑</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 交付 + RSI -->
+  <section class="pv-section" id="s-deliver">
+    <h2>7. 证据交付与 RSI</h2>
+    <div class="pv-grid2">
+      <div class="delivery-report">
+        <div class="report-section">
+          <div class="report-stats">
+            <div class="report-stat"><span class="rs-value">11</span><span class="rs-label">产物</span></div>
+            <div class="report-stat"><span class="rs-value">3</span><span class="rs-label">人工介入</span></div>
+            <div class="report-stat"><span class="rs-value">2</span><span class="rs-label">未验证项</span></div>
+          </div>
+        </div>
+        <div class="evidence-chain">
+          <div class="ev-item"><span class="ev-seq">1</span><span class="ev-type">report</span><span class="ev-ref mono">art:r-7f3a/01</span></div>
+          <div class="ev-item"><span class="ev-seq">2</span><span class="ev-type">evidence</span><span class="ev-ref mono">art:r-7f3a/02</span></div>
+        </div>
+        <div class="report-verify">证据校验：已完成（含未验证项如实标注）</div>
+      </div>
+      <div>
+        <div class="skillpack-card">
+          <div class="sp-head"><span class="sp-name">发票核验 SkillPack</span></div>
+          <div class="sp-meta">来源：invoice MCP · 工具 4 · 已注册</div>
+        </div>
+        <div class="pr-draft" style="margin-top:12px">
+          <div class="pr-head"><span class="pr-state">ready</span></div>
+          <div class="pr-body">PR #42：接入发票核验 SkillPack</div>
+          <div class="pr-note">含 Harness 与注册证据，等待人工合并。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 细粒度 -->
+  <section class="pv-section" id="s-fine">
+    <h2>8. 细粒度通用组件</h2>
+    <div class="pv-box">
+      <div class="pv-row">
+        <button class="switch" type="button" role="switch" aria-checked="true" aria-label="开关"></button>
+        <label class="check-control"><input type="checkbox" checked /><span class="check-box">✓</span>复选</label>
+        <label class="radio-control"><input type="radio" name="r" checked /><span class="check-box radio-box"></span>单选 A</label>
+        <label class="radio-control"><input type="radio" name="r" /><span class="check-box radio-box"></span>单选 B</label>
+      </div>
+      <div class="pv-grid2" style="margin-top:14px">
+        <div class="select-wrap">
+          <select class="select-control" aria-label="选择"><option>选项一（来自 OpenAPI 枚举）</option><option>选项二</option></select>
+          <span class="select-chevron">▾</span>
+        </div>
+        <div class="segmented" role="tablist">
+          <button class="segment-item is-active" type="button">日</button>
+          <button class="segment-item" type="button">周</button>
+          <button class="segment-item" type="button">月</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pv-grid2">
+      <div class="tree">
+        <div class="tree-node is-expanded"><span class="tree-chevron">›</span>📁 src<span class="tree-anchor mono">root</span></div>
+        <div class="tree-children">
+          <div class="tree-node is-selected"><span class="tree-leaf-dot"></span>App.tsx<span class="tree-anchor mono">procurement.table</span></div>
+          <div class="tree-node"><span class="tree-leaf-dot"></span>main.tsx</div>
+        </div>
+      </div>
+      <nav class="pagination" aria-label="分页">
+        <button class="page-item" type="button">‹</button>
+        <button class="page-item" type="button">1</button>
+        <button class="page-item page-current" type="button">2</button>
+        <button class="page-item" type="button">3</button>
+        <span class="page-ellipsis">…</span>
+        <button class="page-item" type="button">›</button>
+      </nav>
+    </div>
+
+    <div class="pv-grid2">
+      <div class="log-viewer">
+        <div class="log-head">运行日志</div>
+        <div class="log-body">
+          <div class="log-line log-info"><span class="log-time">09:12:01</span><span class="log-lvl">INFO</span><span>启动工作流</span></div>
+          <div class="log-line log-warn"><span class="log-time">09:12:04</span><span class="log-lvl">WARN</span><span>重试 1/3</span></div>
+          <div class="log-line log-error"><span class="log-time">09:12:09</span><span class="log-lvl">ERROR</span><span>连接失败</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="code-block">
+          <div class="code-head"><span class="code-filename">schema.sql</span><button class="copy-button icon-button" type="button" aria-label="复制">⧉</button></div>
+          <pre class="code-content">SELECT *
+FROM procurement
+WHERE state = 'pending';</pre>
+        </div>
+        <div class="notification-center" style="margin-top:12px">
+          <div class="notification-item is-unread"><span class="notification-dot"></span><div><div>护栏阻断一条写操作</div><div class="n-time">2 分钟前</div></div></div>
+          <div class="notification-item"><span class="notification-dot"></span><div><div>PR 已就绪</div><div class="n-time">1 小时前</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pv-row">
+      <span class="tag">信创<span class="tag-remove">×</span></span>
+      <span class="tag">采购审批</span>
+      <span class="count-badge">5</span>
+    </div>
+  </section>
+
+  <!-- 9. 状态 -->
+  <section class="pv-section" id="s-state">
+    <h2>9. 空态 / 阻断 / 骨架（诚实呈现）</h2>
+    <div class="pv-grid2">
+      <div class="empty-state">
+        <span>📭</span><strong>该工段尚未产出</strong>
+        <p>上游工段还未完成，产物生成后会自动出现。</p>
+        <div class="empty-actions"><button class="button-quiet" type="button">查看上游工段</button></div>
+      </div>
+      <div class="state-blocked" role="status">
+        <div class="blocked-head"><strong>工段被阻断，未执行</strong></div>
+        <p class="blocked-reason">外部依赖不可用：发票核验 MCP 连接失败。</p>
+        <div class="blocked-actions"><button class="button-primary" type="button">重试连接</button></div>
+      </div>
+    </div>
+    <div class="state-loading" aria-busy="true">
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title" style="width:180px"></div>
+        <div class="skeleton-line" style="width:90%"></div>
+        <div class="skeleton-line" style="width:70%"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById("themeBtn");
+    var root = document.documentElement;
+    btn.addEventListener("click", function () {
+      var dark = root.getAttribute("data-theme") === "dark";
+      root.setAttribute("data-theme", dark ? "light" : "dark");
+    });
+  })();
+</script>
+</body>
+</html>

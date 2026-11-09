@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="磐石智造工作台：资产接入、原型契约、并发制造、质检自愈与交付。">
+  <title>磐石智造 · 软件工厂工作台</title>
+  <link rel="stylesheet" href="styles-final.css">
+  <script>document.documentElement.classList.add('js')</script>
+  <script src="vendor/gsap.min.js" defer></script>
+  <script src="app-final.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">跳转至工作区</a>
+  <header class="navbar">
+    <a class="nav-brand" href="index-final.html" aria-label="磐石智造首页">
+      <svg class="nav-logo" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 11 16 5l11 6-11 6L5 11Z" fill="currentColor"/><path d="m5 17 11 6 11-6M5 23l11 6 11-6" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>
+      <span class="nav-title">磐石智造<span class="brand-sub">软件工厂</span></span>
+    </a>
+    <nav class="nav-stages" aria-label="工段导航">
+      <span class="nav-hover" aria-hidden="true"></span>
+      <span class="nav-selection" aria-hidden="true"></span>
+      <button class="stage-pill active" data-stage="1" aria-current="step" aria-label="工段 1 · 资产接入">资产接入</button>
+      <button class="stage-pill" data-stage="2" aria-label="工段 2 · 原型契约">原型契约</button>
+      <button class="stage-pill" data-stage="3" aria-label="工段 3 · 并发制造">并发制造</button>
+      <button class="stage-pill" data-stage="4" aria-label="工段 4 · 质检自愈">质检自愈</button>
+      <button class="stage-pill" data-stage="5" aria-label="工段 5 · 交付上架">交付上架</button>
+      <span class="nav-indicator" aria-hidden="true"></span>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-button" data-action="toggle-left" aria-label="隐藏左侧栏" title="隐藏左侧栏" aria-pressed="false" data-icon="panel-left"></button>
+      <button class="icon-button" data-action="commands" aria-label="搜索操作，Ctrl K" title="搜索操作 · Ctrl K" data-icon="search"></button>
+      <button class="icon-button run-log-button" data-action="open-logs" aria-label="打开运行记录" title="运行记录"><span data-icon="code"></span><span id="mobileLogCount" class="log-count-badge">0</span></button>
+      <button class="icon-button" id="themeToggle" data-action="theme" aria-label="切换深色模式" title="切换主题" data-icon="moon"></button>
+      <button class="btn btn-primary demo-btn" id="demoBtn" data-action="demo">演示流程</button>
+      <button class="icon-button nav-collapse" data-action="toggle-right" aria-label="隐藏右侧栏" title="隐藏右侧栏" aria-pressed="false" data-icon="panel-right"></button>
+    </div>
+  </header>
+  <div class="main-container">
+    <aside class="sidebar sidebar-left" aria-label="项目资源">
+      <div class="project-switcher"><span class="project-mark">采</span><div><strong>采购系统现代化</strong><span>工作空间 / 本地演示</span></div></div>
+      <div class="sidebar-section"><div class="section-header"><h2>输入源</h2><button class="icon-button small" data-action="add-source" aria-label="添加输入源" data-icon="plus"></button></div><div class="source-list" id="sourceList"></div></div>
+      <div class="sidebar-section"><div class="section-header"><h2>协作智能体</h2><span id="agentCount" class="muted"></span></div><div class="agent-list" id="agentList"></div></div>
+      <div class="sidebar-foot"><span class="status-dot"></span><span>浏览器本地演示</span><button class="text-button" data-action="help">快捷键</button><button class="text-button" data-action="reset-demo">重置</button></div>
+    </aside>
+    <main class="main-content" id="workspace" tabindex="-1">
+      <div class="workspace-context"><span>工作台 <span class="context-divider">/</span> 国企采购系统</span><span class="context-stage" id="contextStage" aria-hidden="true"></span><span class="context-meta"><span class="status-dot"></span>本地交互演示 · 数据与操作在当前浏览器运行</span><button class="text-button" data-action="add-source">接入新资产<span data-icon="arrow"></span></button></div>
+      <div id="stageViews"></div>
+      <section class="proto-view" id="prototypeView" hidden aria-label="原型预览"></section>
+      <section class="log-view" id="logView" hidden aria-label="运行记录">
+        <div class="log-view-head">
+          <div>
+            <div class="stage-index">独立页面</div>
+            <h1 class="stage-title">运行记录</h1>
+            <p class="stage-subtitle">本次会话的每一次扫描、生成、校验与导出，都按时间顺序记在这里。最多保留最近 200 条。</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-secondary" data-action="close-logs">返回工作台</button>
+            <button class="btn btn-secondary" data-action="export-logs">导出日志 <span data-icon="download"></span></button>
+          </div>
+        </div>
+        <div class="terminal terminal-page">
+          <div class="terminal-header"><span>运行记录 · local</span><button class="terminal-tool" data-action="export-logs" aria-label="导出日志" title="导出日志" data-icon="download"></button></div>
+          <div class="terminal-filter"><label class="sr-only" for="logFilter">日志级别</label><select id="logFilter"><option value="all">全部级别</option><option value="info">信息</option><option value="success">完成</option><option value="warning">提醒</option><option value="error">错误</option></select><button class="terminal-tool" id="pauseLogs" data-action="pause-logs" aria-pressed="false">暂停</button><button class="terminal-tool" data-action="clear-logs">清空</button></div>
+          <div class="terminal-body" id="terminalBody" role="log" aria-label="任务日志" aria-live="off"></div>
+          <div class="terminal-footer"><span id="logCount">0 条记录</span><span>session / local</span></div>
+        </div>
+      </section>
+      <noscript><p class="notice">请启用 JavaScript，以使用工段导航和本地交互。</p></noscript>
+    </main>
+    <aside class="sidebar sidebar-right" aria-label="工段进度">
+      <div class="rail-header"><h2>工段进度</h2><span id="railStageNum">工段 1 / 5</span></div>
+      <section class="session-card"><strong id="railStage">资产接入</strong><p id="railHint">从老系统与开源工具开始。</p><div class="pipeline-track" id="pipelineTrack" aria-label="五工段完成进度"></div><p class="rail-progress" id="railProgress" aria-live="polite">已完成 0 / 5 个工段</p></section>
+      <section class="rail-note"><span data-icon="shield"></span><p>契约先行，逐段验收。<br>每一步，都有迹可循。</p></section>
+      <button class="btn btn-secondary rail-export" data-action="export-session">导出项目快照 <span data-icon="download"></span></button>
+    </aside>
+  </div>
+  <dialog id="appDialog" aria-labelledby="dialogTitle"><div class="dialog-top"><h2 id="dialogTitle"></h2><button class="icon-button" data-action="close-dialog" aria-label="关闭对话框" data-icon="close"></button></div><div id="dialogBody"></div></dialog>
+  <div class="toast-region" id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+  <p class="sr-only" id="announce" role="status" aria-live="polite"></p>
+</body>
+</html>

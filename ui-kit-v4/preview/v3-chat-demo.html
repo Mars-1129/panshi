@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RepoPilot v3 · 对话组件渲染验证</title>
+<link rel="stylesheet" href="../css/styles.css" />
+<script>
+  if (new URLSearchParams(location.search).get("theme") === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+</script>
+<style> body { margin: 0; } </style>
+</head>
+<body>
+<div class="chat-workspace">
+  <!-- 顶部条 -->
+  <header class="chat-topbar">
+    <div class="topbar-brand">
+      <span class="brand-mark">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </span>
+      RepoPilot
+    </div>
+    <div class="topbar-context">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      code-agent · main
+    </div>
+    <span class="topbar-spacer"></span>
+    <span class="topbar-status is-live"><span class="status-dot"></span>已连接</span>
+  </header>
+
+  <!-- 主体 -->
+  <div class="chat-body">
+    <div class="chat-scroll">
+      <div class="chat-thread">
+        <!-- 用户消息 -->
+        <div class="msg msg-user">
+          <div class="msg-copy">
+            <div class="msg-bubble">给登录页加上表单校验</div>
+          </div>
+        </div>
+
+        <!-- 计划卡 -->
+        <div class="inline-card card-plan">
+          <div class="inline-card-head">
+            <span class="head-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </span>
+            <strong>执行计划</strong>
+          </div>
+          <ul class="step-list">
+            <li class="step-item step-done">
+              <span class="step-glyph"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="step-copy">分析现有表单结构<small>已完成</small></span>
+            </li>
+            <li class="step-item step-active">
+              <span class="step-glyph"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></span>
+              <span class="step-copy">添加校验规则<small>进行中</small></span>
+            </li>
+            <li class="step-item step-pending">
+              <span class="step-glyph"></span>
+              <span class="step-copy">补充错误提示<small>待处理</small></span>
+            </li>
+          </ul>
+          <div class="affected-files">
+            <span class="file-pill">src/Login.tsx</span>
+            <span class="file-pill">src/validate.ts</span>
+          </div>
+        </div>
+
+        <!-- 审批卡 -->
+        <div class="inline-card card-approval">
+          <div class="inline-card-head">
+            <span class="head-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <strong>需要你的授权</strong>
+          </div>
+          <div class="inline-card-body">接下来会修改 2 个文件，授权后才会写入。</div>
+          <div class="approval-actions">
+            <button class="button button-primary">Allow once</button>
+            <button class="button button-secondary">Reject</button>
+          </div>
+        </div>
+
+        <!-- 可折叠活动行 -->
+        <details class="activity">
+          <summary>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span class="activity-summary">执行了 2 个工具</span>
+            <svg class="activity-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="activity-detail"><pre>$ pnpm typecheck
+Done in 2.4s</pre></div>
+        </details>
+
+        <!-- 内联检查 -->
+        <div class="inline-check check-passed">
+          <span class="check-glyph"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+          单元测试通过
+          <span class="check-duration">1.8s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 产物侧栏 -->
+    <aside class="product-dock">
+      <div class="dock-head"><strong>变更</strong></div>
+      <div class="dock-body">
+        <div class="dock-file is-selected"><span class="kind-added">●</span>src/validate.ts</div>
+        <div class="dock-file"><span class="kind-modified">●</span>src/Login.tsx</div>
+        <pre class="dock-diff">+ export function validate() {
+- const old = check()
++ const next = check(input)
++ return next.valid</pre>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 常驻 composer -->
+  <div class="chat-composer-area">
+    <div class="composer-bar">
+      <div class="composer-tools">
+        <button class="icon-button" aria-label="附件">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+      </div>
+      <textarea class="composer-input" rows="1" placeholder="描述你的任务，按 Enter 发送"></textarea>
+      <button class="composer-send" aria-label="发送">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div class="composer-hint">Enter 发送 · Shift+Enter 换行 · 危险动作需二次确认</div>
+  </div>
+</div>
+</body>
+</html>

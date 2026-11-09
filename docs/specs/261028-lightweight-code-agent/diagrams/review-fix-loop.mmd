@@ -1,0 +1,16 @@
+flowchart TD
+  Diff[目标 Diff] --> Rules[读取仓库规则]
+  Rules --> Related[检索调用方和测试]
+  Related --> Findings[生成带证据 Findings]
+  Findings --> Decision{用户要求修复?}
+  Decision -->|否| Report[只读审查报告]
+  Decision -->|是| Plan[生成最小修复计划]
+  Plan --> Approval{审批}
+  Approval -->|否| Report
+  Approval -->|是| Patch[应用补丁]
+  Patch --> Test[运行原失败命令和回归测试]
+  Test --> Pass{通过?}
+  Pass -->|是| Report2[修复报告]
+  Pass -->|否| Budget{还有修复预算?}
+  Budget -->|是| Plan
+  Budget -->|否| Fail[失败报告与现场]

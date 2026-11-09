@@ -1,0 +1,23 @@
+flowchart TB
+  subgraph MVP[第一版 MVP]
+    CLI[CLI]
+    Runtime[单进程 Runtime]
+    Context[轻量仓库上下文]
+    Tools[FS/Git/Exec/Test]
+    Worktree[本地 Worktree]
+    JSONL[JSONL 记录]
+    CLI --> Runtime
+    Runtime --> Context
+    Runtime --> Tools
+    Tools --> Worktree
+    Runtime --> JSONL
+  end
+  subgraph Later[后续阶段]
+    Web[本地 Web]
+    IDE[VS Code/JetBrains]
+    MCP[MCP]
+    ACP[ACP]
+    Docker[远程 Docker 沙盒]
+    CI[团队 CI/PR]
+  end
+  MVP --> Later

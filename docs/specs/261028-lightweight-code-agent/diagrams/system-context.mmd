@@ -1,0 +1,15 @@
+flowchart LR
+  User[开发者] --> CLI[RepoPilot CLI]
+  User --> Web[本地 Web 控制台]
+  CLI --> Core[Agent Core]
+  Web --> Core
+  Core --> Context[仓库上下文]
+  Core --> Runtime[Agent Runtime]
+  Core --> Policy[审批与安全策略]
+  Runtime --> Tools[受控工具]
+  Tools --> Git[Git Worktree]
+  Tools --> FS[文件系统]
+  Tools --> Exec[命令/测试执行器]
+  Runtime --> LLM[LLM Provider]
+  Core --> Events[JSONL 事件记录]
+  Events --> Report[Diff/测试/风险报告]

@@ -1,0 +1,290 @@
+/* ============================================================================
+   RepoPilot Lite · Components v2（新增交互组件）
+   ----------------------------------------------------------------------------
+   玻璃面板 / Toast / 状态带 / 两步确认 / 折叠 / 工具提示 / 进度条。
+   全部只消费 var(--rp-*)，与基础组件共用同一 token，不引入平行视觉系统。
+   ========================================================================== */
+
+/* ============================================================================
+   玻璃面板（低强度背景层，不做玻璃堆叠）
+   ========================================================================== */
+.glass-panel {
+  border: 1px solid var(--rp-hairline);
+  border-radius: var(--rp-radius-panel);
+  background: var(--rp-glass-bg);
+  backdrop-filter: var(--rp-glass-blur);
+  -webkit-backdrop-filter: var(--rp-glass-blur);
+}
+
+.glass-panel.strong {
+  background: var(--rp-glass-bg-strong);
+}
+
+/* 玻璃面板内的发丝分隔，替代重边框 */
+.glass-panel + .glass-panel {
+  margin-top: var(--rp-space-3);
+}
+
+/* ============================================================================
+   Toast（轻反馈，不替代页面状态/错误解释/不可逆确认）
+   ========================================================================== */
+.toast-region {
+  position: fixed;
+  z-index: var(--rp-z-toast);
+  right: var(--rp-space-5);
+  bottom: var(--rp-space-5);
+  display: grid;
+  gap: var(--rp-space-2);
+  width: min(360px, calc(100vw - 40px));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3) var(--rp-space-4);
+  border: 1px solid var(--rp-hairline);
+  border-radius: var(--rp-radius-panel);
+  background: var(--rp-toast-bg);
+  backdrop-filter: var(--rp-glass-blur);
+  -webkit-backdrop-filter: var(--rp-glass-blur);
+  box-shadow: var(--rp-shadow-md);
+  animation: rp-pop var(--rp-duration-base) var(--rp-ease-spring) both;
+}
+
+.toast > svg {
+  margin-top: 1px;
+  flex: 0 0 auto;
+}
+
+.toast .toast-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast .toast-copy strong {
+  display: block;
+  font-size: var(--rp-fs-ui);
+  font-weight: var(--rp-weight-medium);
+}
+
+.toast .toast-copy small {
+  display: block;
+  margin-top: 2px;
+  color: var(--rp-text-secondary);
+  font-size: var(--rp-fs-compact);
+  line-height: var(--rp-leading-normal);
+}
+
+.toast.toast-ok > svg { color: var(--rp-ok); }
+.toast.toast-warn > svg { color: var(--rp-warn); }
+.toast.toast-danger > svg { color: var(--rp-danger); }
+.toast.toast-info > svg { color: var(--rp-info); }
+
+.toast .toast-close {
+  width: var(--rp-touch-target);
+  height: var(--rp-touch-target);
+  display: grid;
+  place-items: center;
+  border-radius: var(--rp-radius-control);
+  color: var(--rp-text-muted);
+}
+
+.toast .toast-close:hover {
+  background: var(--rp-surface-hover);
+  color: var(--rp-text);
+}
+
+/* ============================================================================
+   状态带 StatusBand：当前状态 / 下一步 / CTA，连续可见
+   ========================================================================== */
+.status-band {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--rp-space-3);
+  padding: var(--rp-space-3) var(--rp-space-4);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-panel);
+  background: var(--rp-surface);
+}
+
+.status-band .band-label {
+  font-family: var(--rp-font-mono);
+  font-size: var(--rp-fs-meta);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rp-text-muted);
+}
+
+.status-band .band-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--rp-fs-ui);
+  font-weight: var(--rp-weight-semibold);
+}
+
+.status-band .band-next {
+  flex: 1;
+  min-width: 180px;
+  color: var(--rp-text-secondary);
+  font-size: var(--rp-fs-compact);
+}
+
+.status-band .band-cta {
+  margin-left: auto;
+}
+
+/* ============================================================================
+   两步确认（破坏性动作）：第一次 armed，第二次才执行
+   ========================================================================== */
+.confirm-button {
+  min-height: var(--rp-touch-target);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rp-space-2);
+  padding: 0 var(--rp-space-4);
+  border: 1px solid var(--rp-border-strong);
+  border-radius: var(--rp-radius-control);
+  background: var(--rp-surface);
+  color: var(--rp-text);
+  font-size: var(--rp-fs-ui);
+  font-weight: var(--rp-weight-medium);
+  transition: background var(--rp-duration-fast) var(--rp-ease-out),
+    border-color var(--rp-duration-fast) var(--rp-ease-out),
+    color var(--rp-duration-fast) var(--rp-ease-out);
+}
+
+.confirm-button.armed {
+  border-color: var(--rp-danger);
+  background: var(--rp-danger-muted);
+  color: var(--rp-danger);
+}
+
+/* 规则（写进 references）：armed 后文案须含对象与后果；失焦或 Esc 复位，
+   不自动倒计时；第二次点击才真正调用删除/拒绝动作。*/
+
+/* ============================================================================
+   可折叠 Disclosure（原生 details/summary，保留键盘语义）
+   ========================================================================== */
+.disclosure {
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-panel);
+  background: var(--rp-surface);
+}
+
+.disclosure > summary {
+  min-height: var(--rp-touch-target);
+  display: flex;
+  align-items: center;
+  gap: var(--rp-space-2);
+  padding: var(--rp-space-3) var(--rp-space-4);
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--rp-fs-ui);
+  font-weight: var(--rp-weight-medium);
+}
+
+.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure > summary .chevron {
+  margin-left: auto;
+  transition: transform var(--rp-duration-fast) var(--rp-ease-out);
+}
+
+.disclosure[open] > summary .chevron {
+  transform: rotate(90deg);
+}
+
+.disclosure .disclosure-body {
+  padding: 0 var(--rp-space-4) var(--rp-space-4);
+  color: var(--rp-text-secondary);
+  font-size: var(--rp-fs-compact);
+  line-height: var(--rp-leading-normal);
+}
+
+/* ============================================================================
+   工具提示 Tooltip（补充，不替代可见关键状态）
+   ========================================================================== */
+.has-tooltip {
+  position: relative;
+}
+
+.tooltip-bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: var(--rp-z-dropdown);
+  padding: 4px 8px;
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-control);
+  background: var(--rp-surface-raised);
+  color: var(--rp-text);
+  box-shadow: var(--rp-shadow-md);
+  font-size: var(--rp-fs-compact);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity var(--rp-duration-fast) var(--rp-ease-out),
+    transform var(--rp-duration-fast) var(--rp-ease-out);
+}
+
+.has-tooltip:hover .tooltip-bubble,
+.has-tooltip:focus-within .tooltip-bubble {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================================================
+   进度条 Progress（确定 + 不确定）
+   ========================================================================== */
+.progress {
+  height: 6px;
+  border-radius: var(--rp-radius-pill);
+  background: var(--rp-surface-muted);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: var(--rp-radius-pill);
+  background: var(--rp-accent);
+  transition: width var(--rp-duration-base) var(--rp-ease-out);
+}
+
+.progress.indeterminate .progress-bar {
+  width: 40%;
+  animation: rp-indeterminate 1.2s var(--rp-ease-inout) infinite;
+}
+
+@keyframes rp-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+/* ============================================================================
+   骨架布局组合（.skeleton 基础在 motion.css）
+   ========================================================================== */
+.skeleton-card {
+  padding: var(--rp-space-5);
+  display: grid;
+  gap: var(--rp-space-2);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius-panel);
+}
+
+.skeleton-card .skeleton-title {
+  height: 14px;
+  width: 48%;
+}
+
+/* ============================================================================
+   待审批强调：在 approval-callout 上叠加 attention（仅待确认才持续脉冲）
+   ========================================================================== */
+.approval-callout.attention {
+  border-color: var(--rp-warn);
+}

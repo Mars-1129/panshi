@@ -1,0 +1,11 @@
+flowchart LR
+  Shell[AppShell] --> Rail[WorkspaceRail]
+  Shell --> Bar[ContextBar]
+  Shell --> Main[TaskWorkspace]
+  Shell --> Evidence[EvidenceRail]
+  Bar --> Repo[Repository + Worktree]
+  Main --> Header[TaskHeader]
+  Main --> Tabs[Overview / Plan / Run / Changes / Checks]
+  Evidence --> Approval[Approval]
+  Evidence --> Checks[Checks summary]
+  Evidence --> Delivery[Delivery report]
