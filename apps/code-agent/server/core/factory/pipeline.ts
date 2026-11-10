@@ -3,6 +3,7 @@ import { RuntimeError } from "../errors.ts"
 import type { AgentEvent } from "../../../shared/types.ts"
 import type { StageRun } from "../../../shared/contracts.ts"
 import { FactoryStore, ensureFactoryDirs } from "./store.ts"
+import { acquireTaskLock, TaskLockError, type AcquiredLock } from "./task-lock.ts"
 import { CONFIRM_REQUIRED, STAGE_NAMES, type EmitFn, type StageContext, type StageResult } from "./types.ts"
 import type { CommandRunner } from "../command-runner.ts"
 import type { Provider } from "../provider.ts"
@@ -61,11 +62,22 @@ export class FactoryPipeline {
       throw new RuntimeError(409, "confirmation_required", `Stage ${stage} writes files; confirm it explicitly first`)
     }
     await this.init()
+    // 进程内 Map 挡住同一进程的并发；磁盘锁挡住另一个进程（CLI、另一个 worker）。
+    let diskLock: AcquiredLock
+    try {
+      diskLock = await acquireTaskLock(this.deps.runDir, stage)
+    } catch (error) {
+      if (error instanceof TaskLockError) {
+        throw new RuntimeError(409, "task_locked", error.message)
+      }
+      throw error
+    }
     running.set(this.deps.taskId, stage)
     try {
       return await this.execute(stage, options.confirm === true)
     } finally {
       running.delete(this.deps.taskId)
+      await diskLock.release()
     }
   }
 
@@ -73,6 +85,7 @@ export class FactoryPipeline {
   async runAll(options: { confirm?: boolean } = {}): Promise<StageRun[]> {
     const results: StageRun[] = []
     for (let stage = 0; stage <= 8; stage += 1) {
+      if (this.deps.signal?.aborted) return results
       try {
         results.push(await this.runStage(stage, { confirm: options.confirm || stage < 5 }))
       } catch (error) {
@@ -104,6 +117,10 @@ export class FactoryPipeline {
   }
 
   private async execute(stage: number, confirm: boolean): Promise<StageRun> {
+    // 取消发生在工段之间：上一个工段可能刚跑完，这里立刻停下。
+    if (this.deps.signal?.aborted) {
+      throw new RuntimeError(499, "cancelled", "运行已取消")
+    }
     const store = this.store
     const previous = await store.readStage(stage)
     if (previous?.status === "running") {

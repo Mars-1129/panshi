@@ -53,3 +53,15 @@ PanShi_SwarmFactory_Frontend_AssetPack*/
 /深度需求与应用场景分析文档.md
 
 /ui-kit.zip
+
+# ui-kit-v4 只入库构建依赖与规范文本；概念图（17MB）留在本地
+ui-kit-v4/concepts/
+
+# ---- 参赛提交包（独立分发的交付物，不进代码仓库）----
+/提交包/
+/磐石智造.zip
+*.zip
+
+# ---- 过程性文档（调研与审计记录，不进代码仓库）----
+/repopilot-product-reposition.md
+/ui-kit-v2-reference-audit.md

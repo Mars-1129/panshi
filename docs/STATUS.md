@@ -23,34 +23,42 @@
 | HTTP/SSE | Origin/Host 校验、`X-RepoPilot-Request`、64KB body、SSE id 与终态关闭 | [`http.ts`](../apps/code-agent/server/http.ts) |
 | CLI | `plan/run/status/diff/undo/review`，退出码 0/1/3 | [`cli/index.ts`](../apps/code-agent/cli/index.ts) |
 | Web | 任务列表、计划、事件时间线、真实检查、diff、报告、undo；空/加载/错误/离线态 | [`src/App.tsx`](../apps/code-agent/src/App.tsx) |
-| 测试 | 151 个单元与集成用例，全部离线 | [`tests/`](../apps/code-agent/tests) |
+| 任务级磁盘锁 | `acquireTaskLock` 独占创建锁文件；跨进程互斥，陈旧锁（进程已死）可接管 | [`task-lock.ts`](../apps/code-agent/server/core/factory/task-lock.ts) |
+| 运行取消 | `POST /stages/cancel` 中止运行；当前工段跑完后停止，后续工段不再执行 | `runtime.ts` `cancelFactory` |
+| 自定义检查 | `.repopilot/checks.json` 声明的检查命令优先于自动推断；配置无效时告警并回落 | [`custom-checks.ts`](../apps/code-agent/server/core/custom-checks.ts) |
+| 规则文件注入 | `AGENTS.md` / `.repopilot/rules.md` / `CLAUDE.md` 按序注入系统提示词 | [`project-rules.ts`](../apps/code-agent/server/core/project-rules.ts) |
+| 沙箱执行后端 | `REPOPILOT_SANDBOX=docker` 时命令在一次性容器内执行；不可用则如实阻断，不回落宿主机 | [`sandbox.ts`](../apps/code-agent/server/core/sandbox.ts) |
+| 前端组件测试 | jsdom + Testing Library，`src/**/*.test.tsx` 与后端 node 测试分 project 运行 | [`vitest.config.ts`](../apps/code-agent/vitest.config.ts) |
+| 测试 | 242 个单元与集成用例，全部离线 | [`tests/`](../apps/code-agent/tests) |
 
 ## 未实现（UI 如实标注）
 
 - 模板脚手架与模板库（模板页显示「本版本未实现」，无入口）。
 - 测试生成模式（composer 只提供 generate / fix / review）。
-- 仓库规则文件（`AGENTS.md` 等）不会注入提示词。
 - MCP / ACP / IDE 集成、Docker 或远程执行后端。
 - 多 run、暂停/恢复、轨迹回放、CI JSONL 输入。
 - 虚拟化、语法高亮、Monaco、视觉系统重绘。
 
 ## 已知限制
 
-- 只有一个并发运行槽位（`Semaphore(1)`），已批准任务按到达顺序串行执行；界面不显示「排队中」的位置。
-- 任务级磁盘锁尚未实现：服务与 CLI 同时写同一任务时，以最后落盘者为准（版本号只用于本地内存比较）。
 - JSONL 事件日志是运行事实来源；`meta.json` 快照在写失败时只记录错误，由下一次成功写入补齐。
 - `exec` 依赖命令白名单，白名单外的合法构建工具需要显式扩展。
-- 检查命令只从 `package.json` scripts 或 go/cargo/python 推断，无法识别自定义 CI 命令。
 - 修复循环把失败输出整体交给模型，模型可能重复同一错误；预算耗尽后任务失败并保留证据。
 - Windows 上 worktree 删除可能因文件锁失败，会重试三次再 `worktree prune`。
-- 未实现任务级磁盘锁：CLI 与服务同时驱动同一任务只能靠进程内互斥。
 - `new/API.txt` 中的历史密钥仍在磁盘上，请轮换后删除；运行时已不再读取它。
+
+## 新增的已知限制
+
+- **磁盘锁只在单机同文件系统有效**，跨机器部署需要数据库行锁或分布式锁。
+- **取消只在工段之间生效**：当前工段会跑完，不会立刻中断正在执行的命令。
+- **沙箱是单次命令隔离，不是常驻容器池**：每次 exec 起一个容器，启动开销几百毫秒；也没有端口映射。
+- **前端测试覆盖仍偏薄**：目前覆盖投影层、合并逻辑与工作流组件；`App.tsx` 的主流程、弹窗与 SSE 驱动状态仍无回归保护。
 
 ## 下一步
 
-1. 任务级磁盘锁与并发运行队列的可见状态。
-2. 检查命令可配置（`.repopilot/checks.json`）。
-3. 规则文件注入（`AGENTS.md` / `.repopilot/rules.md`）。
+1. 前端主流程测试（`App.tsx` 首屏、工段切换、运行确认、弹窗）。
+2. 工段 08 接 Playwright，补上浏览器巡航与 pageerror 捕获。
+3. 工段 03 接 Ghidra，覆盖原生 `.so/.dll` 反编译分支。
 4. 许可证与来源台账（发布前门禁）。
 
 ---

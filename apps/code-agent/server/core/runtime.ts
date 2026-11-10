@@ -3,6 +3,9 @@ import { rm, stat } from "node:fs/promises"
 import { FindingSchema, PlanSchema, type FactoryState } from "../../shared/schemas.ts"
 import type { AgentEvent, Check, Finding, Health, Limits, Patch, Plan, PlanCheck, RepoSummary, Task, TaskMode } from "../../shared/types.ts"
 import { inferChecks, runChecks, summarizeChecks } from "./checks.ts"
+import { readCustomChecks } from "./custom-checks.ts"
+import { formatRulesForPrompt, readProjectRules } from "./project-rules.ts"
+import { probeSandbox, resolveSandboxConfig } from "./sandbox.ts"
 import { CommandRunner } from "./command-runner.ts"
 import { APP_VERSION, type Config } from "./config.ts"
 import { BudgetError, CancelledError, RuntimeError } from "./errors.ts"
@@ -16,6 +19,7 @@ import { clearAiSettings, loadAiSettings, saveAiSettings, type AiSettings } from
 import { TaskStore } from "./task-store.ts"
 import { executeTool, type ToolCall, type ToolContext } from "./tools.ts"
 import { FactoryPipeline } from "./factory/pipeline.ts"
+import { peekTaskLock } from "./factory/task-lock.ts"
 import { summarizeFactory } from "./factory/summary.ts"
 import { createProjectDir, listProjects, type ProjectDraft } from "./projects.ts"
 import { isMissingFile } from "./fs-utils.ts"
@@ -128,7 +132,17 @@ export class Runtime {
       repoError: this.repoError,
       limits: this.config.limits,
       version: APP_VERSION,
+      sandbox: this.sandboxStatus(),
     }
+  }
+
+  /** 命令在哪执行：装机时探测一次，界面用来提示"这条命令跑在容器里还是宿主机上"。 */
+  private sandboxStatus() {
+    const config = resolveSandboxConfig()
+    const probe = probeSandbox(config)
+    return probe.available
+      ? { kind: config.kind, available: true, detail: probe.detail }
+      : { kind: config.kind, available: false, detail: probe.reason }
   }
 
   private providerConfigured(): boolean {
@@ -441,7 +455,7 @@ export class Runtime {
         repo: summary,
         fileList,
       })
-      const plan = this.buildPlan(draft, summary, task.mode)
+      const plan = await this.buildPlan(draft, summary, task.mode)
       await store.update(id, (current) => {
         assertTransition(current.status, "awaiting_approval")
         current.status = "awaiting_approval"
@@ -464,15 +478,28 @@ export class Runtime {
     }
   }
 
-  private buildPlan(draft: PlanDraft, summary: RepoSummary, mode: TaskMode): Plan {
+  private async buildPlan(draft: PlanDraft, summary: RepoSummary, mode: TaskMode): Promise<Plan> {
     const steps = draft.steps.map((step, index) => ({
       id: `step_${index + 1}`,
       title: step.title,
       detail: step.detail,
       status: "pending" as const,
     }))
-    const checks: PlanCheck[] = mode === "review" ? [] : inferChecks(summary)
+    // 仓库声明的 `.repopilot/checks.json` 优先于推断：业务方说什么就执行什么。
+    let checks: PlanCheck[] = []
     const risks = [...draft.risks]
+    if (mode !== "review") {
+      const custom = await readCustomChecks(this.repoRoot)
+      if (custom.kind === "checks") {
+        checks = custom.checks
+      } else {
+        if (custom.kind === "invalid") {
+          // 声明了但读不懂：如实告警，不静默回落到推断
+          risks.push(`自定义检查配置无效（${custom.reason}），已回落到自动推断。`)
+        }
+        checks = inferChecks(summary)
+      }
+    }
     if (mode !== "review" && checks.length === 0) {
       risks.push("No verification command was detected. This task cannot succeed until a check exists.")
     }
@@ -490,6 +517,16 @@ export class Runtime {
     }
     plan.hash = shortHash(JSON.stringify({ summary: plan.summary, steps: plan.steps, files: plan.files, checks: plan.checks }))
     return PlanSchema.parse(plan)
+  }
+
+  /** 系统提示词 = 基础规则 + 仓库自己的规则文件（AGENTS.md / .repopilot/rules.md / CLAUDE.md）。 */
+  private async systemPrompt(task: Task, plan: Plan, review: boolean): Promise<string> {
+    const base = buildSystemPrompt(task, plan, this.requireSummary(), this.config.limits, review)
+    const rules = await readProjectRules(this.repoRoot)
+    const section = formatRulesForPrompt(rules)
+    return section ? `${base}
+
+${section}` : base
   }
 
   private async safeAppend(id: string, type: Parameters<TaskStore["appendEvent"]>[1], payload: Record<string, unknown>): Promise<void> {
@@ -657,7 +694,7 @@ export class Runtime {
     const task = this.requireTask(id)
     const plan = task.plan
     if (!plan) throw new RuntimeError(409, "plan_missing", "The task has no plan")
-    const system = buildSystemPrompt(task, plan, this.requireSummary(), this.config.limits, true)
+    const system = await this.systemPrompt(task, plan, true)
     const messages: ProviderMessage[] = [
       { role: "system", content: system },
       { role: "user", content: buildUserPrompt(task, plan, this.requireSummary(), true) },
@@ -705,7 +742,7 @@ export class Runtime {
     const task = this.requireTask(id)
     const plan = task.plan
     if (!plan) throw new RuntimeError(409, "plan_missing", "The task has no plan")
-    const system = buildSystemPrompt(task, plan, this.requireSummary(), this.config.limits, false)
+    const system = await this.systemPrompt(task, plan, false)
     const messages: ProviderMessage[] = [
       { role: "system", content: system },
       { role: "user", content: buildUserPrompt(task, plan, this.requireSummary(), false) },
@@ -952,6 +989,9 @@ export class Runtime {
   }
 
   // ---- 工厂工段（PanShi-SwarmFactory）----
+  /** 工厂运行的取消控制器：与 M1 计划/执行的 active 分开，两者生命周期不同。 */
+  private readonly factoryControllers = new Map<string, AbortController>()
+
   private factory(taskId: string): FactoryPipeline {
     this.requireTask(taskId)
     return new FactoryPipeline({
@@ -966,6 +1006,7 @@ export class Runtime {
       },
       events: async () => this.events(taskId),
       ai: { enabled: this.aiSource !== "none", provider: this.aiSource !== "none" ? this.provider : null },
+      signal: this.factoryControllers.get(taskId)?.signal,
     })
   }
 
@@ -992,15 +1033,54 @@ export class Runtime {
   }
 
   async runFactoryStage(taskId: string, stage: number, confirm: boolean): Promise<StageRun> {
-    const run = await this.factory(taskId).runStage(stage, { confirm })
-    await this.refreshFactoryState(taskId)
-    return run
+    const controller = this.beginFactoryRun(taskId)
+    try {
+      const run = await this.factory(taskId).runStage(stage, { confirm })
+      await this.refreshFactoryState(taskId)
+      return run
+    } finally {
+      this.endFactoryRun(taskId, controller)
+    }
   }
 
   async runFactoryAll(taskId: string, confirm: boolean): Promise<StageRun[]> {
-    const runs = await this.factory(taskId).runAll({ confirm })
-    await this.refreshFactoryState(taskId)
-    return runs
+    const controller = this.beginFactoryRun(taskId)
+    try {
+      const runs = await this.factory(taskId).runAll({ confirm })
+      await this.refreshFactoryState(taskId)
+      return runs
+    } finally {
+      this.endFactoryRun(taskId, controller)
+    }
+  }
+
+  /** 当前任务是否被别的进程持锁（用于界面显示排队状态）。 */
+  async factoryLock(taskId: string) {
+    return peekTaskLock(this.requireStore().taskDir(taskId))
+  }
+
+  /** 取消正在跑的工厂任务。没有在跑时返回 false。 */
+  cancelFactory(taskId: string): boolean {
+    const controller = this.factoryControllers.get(taskId)
+    if (!controller) return false
+    controller.abort()
+    return true
+  }
+
+  private beginFactoryRun(taskId: string): AbortController {
+    const existing = this.factoryControllers.get(taskId)
+    // 复用未中止的 controller，避免上一次的 signal 被这次覆盖后仍在使用
+    if (existing && !existing.signal.aborted) return existing
+    const controller = new AbortController()
+    this.factoryControllers.set(taskId, controller)
+    return controller
+  }
+
+  private endFactoryRun(taskId: string, controller: AbortController): void {
+    // 只有仍然是当前 controller 时才清理，避免误删后一次运行注册的
+    if (this.factoryControllers.get(taskId) === controller) {
+      this.factoryControllers.delete(taskId)
+    }
   }
 
   /** 工厂运行状态独立于 M1 计划审批：由十工段的 StageRun 推导。 */

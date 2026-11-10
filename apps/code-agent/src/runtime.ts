@@ -101,6 +101,20 @@ export async function rejectRuntimeTask(id: string, reason: string): Promise<{ t
   })
 }
 
+/** 查询任务锁：是否有别的进程正在执行这个任务。 */
+export async function fetchFactoryLock(id: string): Promise<{ lock: { pid: number; stage: number; acquiredAt: string } | null }> {
+  return request(`/api/runtime/tasks/${encodeURIComponent(id)}/stages`)
+}
+
+/** 取消正在跑的工厂任务。返回是否真的有在跑的任务被中止。 */
+export async function cancelFactoryRun(id: string): Promise<{ cancelled: boolean }> {
+  return request(`/api/runtime/tasks/${encodeURIComponent(id)}/stages/cancel`, {
+    method: "POST",
+    headers: MUTATION_HEADERS,
+    body: "{}",
+  })
+}
+
 export async function cancelRuntimeTask(id: string): Promise<{ task: ServerTask }> {
   return request(`/api/runtime/tasks/${encodeURIComponent(id)}/cancel`, {
     method: "POST",

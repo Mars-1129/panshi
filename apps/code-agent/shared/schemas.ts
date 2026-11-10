@@ -223,6 +223,14 @@ export const HealthSchema = z.object({
   repoError: z.string().nullable().optional(),
   limits: LimitsSchema,
   version: z.string(),
+  /** 命令在哪里执行。docker 不可用时会带 reason，界面据此提示。 */
+  sandbox: z
+    .object({
+      kind: z.enum(["host", "docker"]),
+      available: z.boolean(),
+      detail: z.string(),
+    })
+    .optional(),
 })
 
 export const CreateTaskInputSchema = z.object({

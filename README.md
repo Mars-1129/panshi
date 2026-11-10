@@ -74,6 +74,16 @@ REPOPILOT_REPO=samples/legacy-procurement pnpm server   # http://127.0.0.1:4174
 | `REPOPILOT_API_KEY` | — | 也接受 `SILICONFLOW_API_KEY` / `OPENAI_API_KEY` |
 | `REPOPILOT_REPO` | `samples/legacy-procurement` | 目标仓库（必须是 Git 仓库） |
 | `REPOPILOT_PORT` | `4174` | 独立服务端口 |
+| `REPOPILOT_SANDBOX` | `host` | `host` / `docker`；docker 不可用时如实阻断，不回落宿主机 |
+| `REPOPILOT_SANDBOX_IMAGE` | `node:24-bookworm-slim` | 容器镜像 |
+| `REPOPILOT_SANDBOX_NETWORK` | `none` | 容器网络（默认禁用） |
+
+### 仓库自定义（可选）
+
+| 文件 | 作用 |
+| --- | --- |
+| `.repopilot/checks.json` | 声明验证命令，优先于自动推断 |
+| `AGENTS.md` / `.repopilot/rules.md` / `CLAUDE.md` | 项目约定，按序注入系统提示词 |
 
 ---
 
@@ -92,7 +102,7 @@ REPOPILOT_REPO=samples/legacy-procurement pnpm server   # http://127.0.0.1:4174
 ## 测试
 
 ```bash
-pnpm --dir apps/code-agent test         # 151 个单元与集成用例，全程离线
+pnpm --dir apps/code-agent test         # 242 个单元与集成用例，全程离线
 pnpm --dir apps/code-agent typecheck
 pnpm --dir apps/code-agent build
 ```

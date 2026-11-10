@@ -142,11 +142,21 @@ export function createRequestHandler(options: HttpOptions): RequestHandler {
         const rest = factoryMatch[3] ? decodeURIComponent(factoryMatch[3]) : undefined
         const isRun = factoryMatch[4] === "run"
         if (area === "stages" && !rest && request.method === "GET") {
-          sendJson(response, 200, { stages: await runtime.factoryStages(id) })
+          // lock 让界面能显示「另一个进程正在跑」而不是干等
+          const lock = await runtime.factoryLock(id)
+          sendJson(response, 200, { stages: await runtime.factoryStages(id), lock })
+          return
+        }
+        if (area === "stages" && rest === "cancel" && request.method === "POST") {
+          const cancelled = runtime.cancelFactory(id)
+          sendJson(response, 200, { cancelled })
           return
         }
         if (area === "stages" && rest === "run-all" && request.method === "POST") {
           const input = await readJson(request, StageRunInputSchema, bodyLimitBytes, true)
+          // 先同步检查锁：runFactoryAll 是 fire-and-forget，409 会被 catch 吞掉，
+          // 调用方看到 202 却什么都没启动。
+          await assertTaskNotLocked(runtime, id)
           void runtime.runFactoryAll(id, input?.confirm === true).catch(() => undefined)
           sendJson(response, 202, { started: true })
           return
@@ -160,6 +170,7 @@ export function createRequestHandler(options: HttpOptions): RequestHandler {
           if ((stage === 5 || stage === 6) && input?.confirm !== true) {
             throw new RuntimeError(409, "confirmation_required", "写入型工段需要显式确认")
           }
+          await assertTaskNotLocked(runtime, id)
           void runtime.runFactoryStage(id, stage, input?.confirm === true).catch(() => undefined)
           sendJson(response, 202, { started: true, stage })
           return
@@ -389,6 +400,20 @@ function sendError(response: ServerResponse, error: unknown): void {
   }
   const message = error instanceof Error ? error.message : "Internal error"
   sendJson(response, 500, { error: { code: "internal_error", message } })
+}
+
+/**
+ * 任务被另一个进程持锁时返回 409，而不是先回 202 再把错误吞掉。
+ * `runFactory*` 是 fire-and-forget，异常在 .catch 里消失，调用方会误以为已经启动。
+ */
+async function assertTaskNotLocked(runtime: Runtime, taskId: string): Promise<void> {
+  const lock = await runtime.factoryLock(taskId)
+  if (!lock) return
+  throw new RuntimeError(
+    409,
+    "task_locked",
+    `任务正在被另一个进程执行（pid ${lock.pid}，工段 ${String(lock.stage).padStart(2, "0")}）`,
+  )
 }
 
 function isLocalHost(hostHeader: string | undefined): boolean {

@@ -2,6 +2,8 @@ import { spawnSync } from "node:child_process"
 import type { ChildProcess } from "node:child_process"
 import crossSpawn from "cross-spawn"
 
+import { probeSandbox, resolveSandboxConfig, wrapForContainer, type SandboxConfig } from "./sandbox.ts"
+
 export type CommandResult = {
   command: string
   exitCode: number | null
@@ -107,6 +109,22 @@ export function checkCommandPolicy(command: string, args: string[]): string | nu
 
 export class CommandRunner {
   private active = new Set<ChildProcess>()
+  private readonly sandbox: SandboxConfig
+  private sandboxChecked: { available: boolean; reason?: string } | null = null
+
+  constructor(options: { sandbox?: SandboxConfig } = {}) {
+    this.sandbox = options.sandbox ?? resolveSandboxConfig()
+  }
+
+  /** 每次进程启动只探测一次：镜像被删掉后不会每条件命令都重试。 */
+  private ensureSandbox(): string | null {
+    if (this.sandbox.kind === "host") return null
+    if (!this.sandboxChecked) {
+      const probe = probeSandbox(this.sandbox)
+      this.sandboxChecked = probe.available ? { available: true } : { available: false, reason: probe.reason }
+    }
+    return this.sandboxChecked.available ? null : (this.sandboxChecked.reason ?? "沙箱不可用")
+  }
 
   async run(input: RunCommandInput): Promise<CommandResult> {
     const args = input.args ?? []
@@ -116,12 +134,20 @@ export class CommandRunner {
       return { command: display, exitCode: null, stdout: "", stderr: "", durationMs: 0, timedOut: false, truncated: false, blocked }
     }
 
+    // 沙箱不可用时如实阻断，不回落到宿主机
+    const sandboxError = this.ensureSandbox()
+    if (sandboxError) {
+      return { command: display, exitCode: null, stdout: "", stderr: "", durationMs: 0, timedOut: false, truncated: false, blocked: sandboxError }
+    }
+
     const started = Date.now()
     const timeoutMs = input.timeoutMs ?? 120_000
     const maxOutputBytes = input.maxOutputBytes ?? 64 * 1024
 
     return new Promise<CommandResult>((resolvePromise) => {
-      const child = crossSpawn(input.command, args, {
+      // 沙箱模式下把真实命令包进容器；cmd/args 都会被替换
+      const wrapped = this.sandbox.kind === "docker" ? wrapForContainer(this.sandbox, { command: input.command, args, cwd: input.cwd }) : null
+      const child = crossSpawn(wrapped?.command ?? input.command, wrapped?.args ?? args, {
         cwd: input.cwd,
         env: scrubbedEnv(),
         shell: false,

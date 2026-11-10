@@ -12,7 +12,7 @@ import {
   ShieldPlus, Sprout, Sun, Sword, Swords, Table, TerminalSquare, TriangleAlert, Users, Workflow, X,
 } from "lucide-react"
 import type { AgentEvent, ConnectionState, Health, RepoSummary, ServerTask, TaskMode, Theme } from "./types"
-import { ApiError, configureAi, createRuntimeProject, deleteRuntimeProject, getAiStatus, clearAi, type AiStatus, listRuntimeProjects, openRuntimeRepo, createRuntimeTask, fetchRuntimeEvents, getRuntimeTask, listRuntimeTasks, runtimeHealth, runtimeRepo, runFactoryAll, runFactoryStage, subscribeRuntimeEvents, type EventSubscription } from "./runtime"
+import { ApiError, configureAi, createRuntimeProject, deleteRuntimeProject, getAiStatus, clearAi, type AiStatus, listRuntimeProjects, openRuntimeRepo, createRuntimeTask, fetchRuntimeEvents, getRuntimeTask, listRuntimeTasks, runtimeHealth, runtimeRepo, runFactoryAll, runFactoryStage, cancelFactoryRun, fetchFactoryLock, subscribeRuntimeEvents, type EventSubscription } from "./runtime"
 import { mergeEvents } from "./lib/view-model"
 import { ANCHOR_ORDER, RAIL_ORDER, ROLE_ORDER, STAGES, STAGE_ARTIFACTS, STAGE_GUIDE, STAGE_STEPS, type AdversarialBoard, type ApprovalRecord, type CruiseView, type FactorySource, type PanshiAnchorId, type PermissionView, type RailStatsView, type PrototypeView, type RailViolation, type RoleView, type SourceLedgerView, type StageId, type StageStatus, type StageVerdict, type StageView } from "./view-model/factory-types"
 import { mapAdversarial, mapAllStages, mapApprovals, mapCruise, mapDelivery, mapPermission, mapPrototype, mapRailStats, mapRailViolations, mapStageVerdict, mapRoles, mapSourceLedger, stageProgress } from "./view-model/mappers"
@@ -23,6 +23,7 @@ import { EvidenceDrawer } from "./components/EvidenceDrawer"
 import { Seal } from "./components/Seal"
 import { ProjectsDialog } from "./components/ProjectsDialog"
 import { artifactLabel, eventLabel, railLabel, roleLabel } from "./i18n"
+import { currentViewHash, formatViewHash, parseViewHash } from "./lib/view-state"
 
 const PHASES: Array<{ id: string; label: string; short: string; stages: StageId[] }> = [
   { id: "S1", label: "接入与解构", short: "解构", stages: [0, 1, 2, 3] },
@@ -116,8 +117,10 @@ function terminal(status: ServerTask["status"]): boolean {
 
 export default function App() {
   const [theme, setTheme] = useState<Theme>(() => localStorage.getItem("rp-theme") === "dark" ? "dark" : "light")
-  const [stageId, setStageId] = useState<StageId>(0)
-  const [view, setView] = useState<"overview" | "stage">("overview")
+  // 初始视图来自 URL hash，刷新后回到同一工段；认不出来时用默认值。
+  const [initialView] = useState(() => parseViewHash(currentViewHash()))
+  const [stageId, setStageId] = useState<StageId>(initialView.view === "stage" ? (initialView.stage as StageId) : 0)
+  const [view, setView] = useState<"overview" | "stage">(initialView.view)
   const [load, setLoad] = useState<"loading" | "ready" | "error">("loading")
   const [reachable, setReachable] = useState(false)
   const [health, setHealth] = useState<Health | null>(null)
@@ -138,6 +141,8 @@ export default function App() {
   const [contractsOpen, setContractsOpen] = useState(false)
   const [helpTab, setHelpTab] = useState<"guide" | "backend" | null>(null)
   const [runArmed, setRunArmed] = useState<number | null>(null)
+  /** 另一个进程（CLI / 另一个 worker）持有的任务锁；非空时界面显示「其他进程正在运行」。 */
+  const [factoryLock, setFactoryLock] = useState<{ pid: number; stage: number } | null>(null)
   const [runPending, setRunPending] = useState<number | null>(null)
   const [anchor, setAnchor] = useState<PanshiAnchorId>("procurement.table")
   const [invoiceBlocked, setInvoiceBlocked] = useState(false)
@@ -168,6 +173,54 @@ export default function App() {
   useEffect(() => {
     activeIdRef.current = activeId
   }, [activeId])
+
+  // 视图状态写回地址栏：刷新保持、也能把位置发给别人。
+  // 用 replaceState 而不是 location.hash =：不往历史里塞一堆状态，后退仍按页面走。
+  useEffect(() => {
+    const hash = formatViewHash(view === "stage" ? { view: "stage", stage: stageId } : { view: "overview" })
+    const target = `${window.location.pathname}${window.location.search}${hash}`
+    if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== target) {
+      window.history.replaceState(window.history.state, "", target)
+    }
+  }, [view, stageId])
+
+  // 浏览器前进/后退时跟着 hash 走
+  useEffect(() => {
+    const onHashChange = () => {
+      const next = parseViewHash(currentViewHash())
+      if (next.view === "stage") {
+        setView("stage")
+        setStageId(next.stage as StageId)
+      } else {
+        setView("overview")
+      }
+    }
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+  }, [])
+
+  // 运行期间轮询任务锁：跨进程的排队状态无法靠 SSE 得知，只能查。
+  useEffect(() => {
+    if (!activeId || runPending === null) {
+      setFactoryLock(null)
+      return
+    }
+    let disposed = false
+    const poll = async () => {
+      try {
+        const data = await fetchFactoryLock(activeId)
+        if (!disposed) setFactoryLock(data.lock)
+      } catch {
+        if (!disposed) setFactoryLock(null)
+      }
+    }
+    void poll()
+    const timer = window.setInterval(() => void poll(), 3000)
+    return () => {
+      disposed = true
+      window.clearInterval(timer)
+    }
+  }, [activeId, runPending])
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -252,6 +305,21 @@ export default function App() {
       setTasks((current) => current.map((item) => item.id === id ? next : item))
     } catch (e) { setError(message(e)) }
   }
+  /** 取消正在跑的工厂任务：先中止后端，再清掉乐观的进行中标记。 */
+  async function cancelRun(): Promise<void> {
+    if (!activeId) return
+    try {
+      const { cancelled } = await cancelFactoryRun(activeId)
+      if (cancelled) pushToast("info", "正在中止", "当前工段跑完后停止，后续工段不再执行；已完成的证据与产物都保留。")
+      else pushToast("info", "没有运行中的任务", "该任务当前没有在执行的工段。")
+    } catch (error) {
+      pushToast("warn", "取消失败", message(error))
+    } finally {
+      setRunPending(null)
+      setRunArmed(null)
+    }
+  }
+
   async function startRun(stage: number): Promise<void> {
     if (!activeId) {
       setComposer(true)
@@ -427,7 +495,7 @@ export default function App() {
         {load === "ready" && error && <div className="action-error" role="alert"><TriangleAlert size={16} /><span>{error}</span><button className="icon-button" type="button" aria-label="关闭错误" onClick={() => setError(null)}><X size={15} /></button></div>}
         {load === "ready" && view === "overview" && <Overview repo={repo} tasks={tasks} stages={stages} source={source} aiStatus={aiStatus} projects={projects} aiConfigured={aiStatus?.configured === true} onCreate={() => setWizardOpen(true)} onOpenProjects={() => setProjectsOpen(true)} onOpenAi={() => setAiOpen(true)} onContinue={() => { setView("stage"); setStageId(0) }} onOpenProject={(path) => void openProject(path)} />}
         {load === "ready" && view === "stage" && tasks.length === 0 && selected?.stage === 0 && <Welcome repo={repo} projects={projects} onCreate={() => setWizardOpen(true)} onSample={runCurrent} onOpenProject={(path) => void openProject(path)} />}
-        {load === "ready" && view === "stage" && selected && (tasks.length > 0 || selected.stage !== 0) && <div className="stage-enter" key={selected.stage}><StageWorkspace stage={selected} stages={stages} onSelectStage={setStageId} tasks={tasks} source={source} roles={mapRoles(source)} violations={mapRailViolations(source)} board={mapAdversarial(source)} cruise={mapCruise(source)} delivery={mapDelivery(source)} anchor={anchor} setAnchor={setAnchor} invoiceBlocked={invoiceBlocked} onOpenArtifacts={() => setArtifactsOpen(true)} onOpenContracts={() => setContractsOpen(true)} onOpenHelp={() => setHelpTab("guide")} onOpenWizard={() => setWizardOpen(true)} runPending={runPending} runArmed={runArmed} onRun={startRun} onInvoice={() => { setInvoiceBlocked(true); pushToast("warn", "Skill 尚未接入", "MCP Skill 后端未接入，本次调用未执行。") }} submitConfirm={submitConfirm} onSubmit={() => { setSubmitConfirm(true); pushToast("info", "需要二次确认", "写操作未执行：后端 RBAC 与审批服务尚未接入。") }} onCreateTask={() => setComposer(true)} /></div>}
+        {load === "ready" && view === "stage" && selected && (tasks.length > 0 || selected.stage !== 0) && <div className="stage-enter" key={selected.stage}><StageWorkspace stage={selected} stages={stages} onSelectStage={setStageId} tasks={tasks} source={source} roles={mapRoles(source)} violations={mapRailViolations(source)} board={mapAdversarial(source)} cruise={mapCruise(source)} delivery={mapDelivery(source)} anchor={anchor} setAnchor={setAnchor} invoiceBlocked={invoiceBlocked} onOpenArtifacts={() => setArtifactsOpen(true)} onOpenContracts={() => setContractsOpen(true)} onOpenHelp={() => setHelpTab("guide")} onOpenWizard={() => setWizardOpen(true)} runPending={runPending} runArmed={runArmed} onRun={startRun} onCancel={cancelRun} runLocked={factoryLock !== null} onInvoice={() => { setInvoiceBlocked(true); pushToast("warn", "Skill 尚未接入", "MCP Skill 后端未接入，本次调用未执行。") }} submitConfirm={submitConfirm} onSubmit={() => { setSubmitConfirm(true); pushToast("info", "需要二次确认", "写操作未执行：后端 RBAC 与审批服务尚未接入。") }} onCreateTask={() => setComposer(true)} /></div>}
       </div></main>
     </div>
     <footer className="factory-statusbar">
@@ -466,6 +534,7 @@ function StageWorkspace(props: {
   anchor: PanshiAnchorId; setAnchor: (id: PanshiAnchorId) => void; invoiceBlocked: boolean; onInvoice: () => void; submitConfirm: boolean; onSubmit: () => void; onCreateTask: () => void
   stages: ReturnType<typeof mapAllStages>; onSelectStage: (id: StageId) => void; tasks: ServerTask[]
   onOpenArtifacts: () => void; onOpenContracts: () => void; onOpenHelp: () => void; onOpenWizard: () => void; runPending: number | null; runArmed: number | null; onRun: (stage: number) => void
+  runLocked?: boolean; onCancel?: () => void
 }) {
   const n = props.stage.stage
   const [evidenceOpen, setEvidenceOpen] = useState(false)
@@ -506,7 +575,15 @@ function StageWorkspace(props: {
         <p className="stage-next">{I({ name: "Compass", size: 13 })}<b>下一步</b>{STAGE_GUIDE[n]}</p>
       </div>
       <div className="stage-actions">
-        <button className="button button-primary" type="button" disabled={props.runPending !== null} onClick={() => props.onRun(n)}>{props.runPending === n ? <LoaderCircle className="spin" size={15} /> : <Rocket size={15} />}{props.runArmed === n ? "确认执行（写文件）" : n === 0 ? "运行 MVP 全链路" : "运行本工段"}</button>
+        {props.runPending !== null ? (
+          <button className="button button-secondary" type="button" onClick={props.onCancel} title="中止当前运行"><X size={15} />取消运行</button>
+        ) : props.runLocked ? (
+          <button className="button button-secondary" type="button" disabled title="另一个进程正在执行该任务">
+            <LoaderCircle className="spin" size={15} />其他进程正在运行
+          </button>
+        ) : (
+          <button className="button button-primary" type="button" onClick={() => props.onRun(n)}>{props.runArmed === n ? <Check size={15} /> : <Rocket size={15} />}{props.runArmed === n ? "确认执行（写文件）" : n === 0 ? "运行 MVP 全链路" : "运行本工段"}</button>
+        )}
         <button className="button button-quiet" type="button" onClick={() => setEvidenceOpen(true)} title="查看本工段证据"><ListTree size={15} />证据</button>
         <button className="button button-quiet" type="button" onClick={props.onOpenArtifacts} title="查看本工段产物（弹窗）"><Boxes size={15} />产物{artifactCount > 0 ? <span className="count-pill">{artifactCount}</span> : null}</button>
         {n === 5 && <button className="button button-quiet" type="button" onClick={props.onOpenContracts}><FileSignature size={15} />契约</button>}
@@ -845,7 +922,7 @@ function RunHero(props: {
     </div>
   </section>
 }
-function WorkflowRibbon(props: { stages: Array<{ stage: StageId; name: string; status: StageStatus; selected: boolean }>; onSelect: (id: StageId) => void }) {
+export function WorkflowRibbon(props: { stages: Array<{ stage: StageId; name: string; status: StageStatus; selected: boolean }>; onSelect: (id: StageId) => void }) {
   const labels: Record<StageStatus, string> = { done: "通过", active: "执行中", failed: "失败", blocked: "阻断", pending: "待运行", not_applicable: "不适用" }
   return <section className="workflow" aria-label="十工段工作流">
     <div className="workflow-head"><b>十工段工作流</b><span>点击任意节点跳转 · 灰色为待运行</span></div>
@@ -1196,7 +1273,7 @@ function Delivery(props: { report: ReturnType<typeof mapDelivery>; sources: Sour
     </aside>
   </div>
 }
-function Empty(props: { title: string; detail: string }) { return <div className="empty-state"><span>{I({ name: "Inbox", size: 21 })}</span><strong>{props.title}</strong><p>{props.detail}</p></div> }
+export function Empty(props: { title: string; detail: string }) { return <div className="empty-state"><span>{I({ name: "Inbox", size: 21 })}</span><strong>{props.title}</strong><p>{props.detail}</p></div> }
 function Composer(props: { onClose: () => void; onCreate: (title: string, summary: string) => Promise<string | null> }) {
   const [title, setTitle] = useState("")
   const [summary, setSummary] = useState("")
